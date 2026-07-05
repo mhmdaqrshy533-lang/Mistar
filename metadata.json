@@ -1,0 +1,8 @@
+{
+  "name": "مِسْطار - الحقيبة المدرسية الشاملة",
+  "description": "نظام متكامل لإدارة الموارد التعليمية (ERP) يشمل إدارة الطلاب، الامتحانات، النتائج، والخطط الدراسية بهوية بصرية ملكية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

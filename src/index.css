@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-royal-purple: #6b21a8;
+  --color-royal-purple-light: #9333ea;
+  --color-royal-purple-dark: #4c1d95;
+}
+
+:root {
+  direction: rtl;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 font-sans antialiased;
+}
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, var(--color-royal-purple) 0%, var(--color-royal-purple-dark) 100%);
+}
+
