@@ -41,7 +41,7 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
             <div>
               <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <ScanLine className="text-indigo-600" size={24} />
-                وحدة المعالجة البصرية (Bubble Sheet OCR)
+                التصحيح الذكي (Smart Correction)
               </h1>
               <p className="text-slate-500 font-medium text-sm mt-1">
                 خوارزمية رياضية لاستخراج البيانات من أوراق الإجابة بدقة 99.9%
@@ -165,6 +165,15 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
                       <span className="text-slate-500 text-sm">الدرجة النهائية</span>
                       <span className="font-black text-2xl text-indigo-700">{results.score}%</span>
                     </div>
+                  </div>
+
+                  <div className="flex gap-2 mb-4 w-full">
+                    <button className="flex-1 py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl hover:bg-indigo-100 transition-colors border border-indigo-100 text-sm">
+                      حفظ السجل
+                    </button>
+                    <button className="flex-1 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl hover:bg-emerald-100 transition-colors border border-emerald-100 text-sm">
+                      تصدير
+                    </button>
                   </div>
 
                   <button 

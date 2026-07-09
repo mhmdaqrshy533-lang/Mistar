@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/components/Dashboard.tsx
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -187,3 +188,4 @@ export default function Dashboard({ onSelect, onOpenBadges }: { onSelect: (id: s
     </div>
   );
 }
+INNER_EOF

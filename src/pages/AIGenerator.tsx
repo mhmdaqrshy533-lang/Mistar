@@ -1,459 +1,658 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  ArrowRight, 
-  Sparkles,
-  Wand2,
-  ListChecks,
-  Save,
-  Loader2,
-  Image as ImageIcon,
-  Copy,
-  BrainCircuit,
-  ShieldCheck,
-  Printer,
-  Edit3,
-  X,
-  Palette
+  ArrowRight, Sparkles, Printer, Edit3, X, Palette, 
+  Settings, Image as ImageIcon, Database, PlusCircle, 
+  PenTool, Circle, ArrowUpRight, Type, Check, Download,
+  Square, Triangle, Wand2, Battery, Magnet, ZoomIn, ZoomOut, Trash2
 } from 'lucide-react';
 
 export default function AIGenerator({ onBack }: { onBack: () => void }) {
-  const [topic, setTopic] = useState('');
-  const [difficulty, setDifficulty] = useState('متوسط');
-  const [bloomLevel, setBloomLevel] = useState('شامل (جميع المستويات)');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
-  const [activeModel, setActiveModel] = useState<number>(0);
-  const [imageUploaded, setImageUploaded] = useState(false);
+  const [questions, setQuestions] = useState<any[]>([]);
   
-  // Interactive Editing State
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editQText, setEditQText] = useState('');
-  const [editQAnswer, setEditQAnswer] = useState('');
+  // Paper Info
+  const [showPaperInfo, setShowPaperInfo] = useState(false);
+  const [paperInfo, setPaperInfo] = useState({
+    governorate: 'محافظة تعز',
+    directorate: 'مديرية التعزية',
+    school: 'مدرسة عمار بن ياسر',
+    teacher: 'م. سهيل الهزبري',
+    subject: 'الفيزياء',
+    grade: 'الثالث الثانوي',
+    section: 'أ',
+    term: 'الفصل الدراسي الأول',
+    year: '2026-2027',
+    examTitle: 'اختبار نهاية الفصل الدراسي الأول',
+    time: 'ساعتان',
+    score: '100',
+    day: 'الأحد',
+    date: '2026/01/15',
+    hijriDate: '1448/07/01',
+    formNumber: '1',
+    language: 'عربي',
+    direction: 'RTL',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Coat_of_arms_of_Yemen.svg'
+  });
 
-  // Themes
+  // Themes & Templates
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [activeTheme, setActiveTheme] = useState<'theme-black' | 'theme-navy' | 'theme-green'>('theme-black');
+  const [activeTemplate, setActiveTemplate] = useState('standard');
 
-  const bloomLevels = ['تذكر', 'فهم', 'تطبيق', 'تحليل', 'تقييم', 'ابتكار', 'شامل (جميع المستويات)'];
-  const themes = [
-    { id: 'theme-black', name: 'الأسود الوزاري التقليدي الصارم' },
-    { id: 'theme-navy', name: 'الأزرق الملكي الرسمي' },
-    { id: 'theme-green', name: 'الأخضر الإداري التعليمي' }
-  ];
+  // Add Question Dialog
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [savedBank, setSavedBank] = useState<any[]>([]);
 
-  const generateContent = async () => {
-    if (!topic && !imageUploaded) return;
-    setIsGenerating(true);
-    
-    // Simulate complex generation with 3 anti-cheat models
-    setTimeout(() => {
-      const generateModel = (modifier: string) => [
-        { q: `ما هي أهم خصائص ${topic || 'الدرس المرفق'}؟ ${modifier}`, answer: 'خصائص معيارية تعتمد على الفهم.', type: 'مقال' },
-        { q: `قارن بين المفاهيم الأساسية في هذا الموضوع. ${modifier}`, answer: 'مقارنة تحليلية دقيقة.', type: 'تحليل' },
-        { q: 'اختر الإجابة الصحيحة: يعتمد هذا المبدأ على...', answer: 'الخيار ج', type: 'اختيار من متعدد' },
-      ];
-
-      setGeneratedQuestions([
-        generateModel('(النموذج أ)'),
-        generateModel('(النموذج ب) - ترتيب مختلف للأسئلة'),
-        generateModel('(النموذج ج) - صياغة مختلفة لنفس الأهداف')
+  // Physics Drawing State
+  const [showPhysicsDraw, setShowPhysicsDraw] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [physicsQText, setPhysicsQText] = useState('');
+  const [aiCorrectEnabled, setAiCorrectEnabled] = useState(true);
+  
+  useEffect(() => {
+    const saved = localStorage.getItem('mistar_question_bank');
+    if (saved) {
+      setSavedBank(JSON.parse(saved));
+    }
+    // Load some mock data if empty
+    if (questions.length === 0) {
+      setQuestions([
+        { type: 'tf', text: 'تسارع الجاذبية الأرضية ثابت في جميع أجزاء الكرة الأرضية.' },
+        { type: 'mcq', text: 'وحدة قياس القوة هي:', options: ['نيوتن', 'جول', 'وات', 'باسكال'] }
       ]);
-      setActiveModel(0);
-      setIsGenerating(false);
-    }, 2500);
+    }
+  }, []);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setPaperInfo(prev => ({ ...prev, logo: ev.target!.result as string }));
+        }
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const importFromBank = (q: any) => {
+    setQuestions([...questions, q]);
+    setShowAddDialog(false);
   };
 
-  const openEditDialog = (index: number) => {
-    setEditQText(generatedQuestions[activeModel][index].q);
-    setEditQAnswer(generatedQuestions[activeModel][index].answer);
-    setEditingIndex(index);
+  const addNewQuestion = (type: string) => {
+    if (type === 'physics') {
+      setShowPhysicsDraw(true);
+      setShowAddDialog(false);
+      return;
+    }
+    const newQ = type === 'tf' 
+      ? { type: 'tf', text: 'سؤال صح وخطأ جديد...' }
+      : { type: 'mcq', text: 'سؤال اختيارات جديد...', options: ['أ', 'ب', 'ج', 'د'] };
+    setQuestions([...questions, newQ]);
+    setShowAddDialog(false);
   };
 
-  const saveEdit = () => {
-    if (editingIndex === null) return;
-    const newQuestions = [...generatedQuestions];
-    newQuestions[activeModel][editingIndex].q = editQText;
-    newQuestions[activeModel][editingIndex].answer = editQAnswer;
-    setGeneratedQuestions(newQuestions);
-    setEditingIndex(null);
+  const savePhysicsQuestion = () => {
+    if (canvasRef.current) {
+      const imgData = canvasRef.current.toDataURL('image/png');
+      setQuestions([...questions, { type: 'physics', text: physicsQText, image: imgData }]);
+      setShowPhysicsDraw(false);
+      setPhysicsQText('');
+    }
   };
 
-  // Theme Styles
-  const getThemeStyles = () => {
+  // Drawing Canvas Handlers
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    ctx.beginPath();
+    ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    setIsDrawing(true);
+  };
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    ctx.stroke();
+  };
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    if (aiCorrectEnabled && canvasRef.current) {
+      // Simulate AI correction by just adding a clean shape or smoothing
+      // In a real app this would analyze paths. Here we just add a small glow to indicate "processed".
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        ctx.shadowColor = 'rgba(79, 70, 229, 0.2)';
+        ctx.shadowBlur = 4;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+    }
+  };
+  const clearCanvas = () => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (ctx && canvasRef.current) {
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    }
+  };
+
+  const getThemeVars = () => {
     switch (activeTheme) {
-      case 'theme-navy':
-        return 'font-serif border-[4px] border-double border-[#1e3a8a] bg-white';
-      case 'theme-green':
-        return 'font-serif border-[4px] border-double border-[#047857] bg-white';
+      case 'theme-navy': return { '--border-color': '#1e3a8a', '--bg-table-header': '#f0f4f8' } as React.CSSProperties;
+      case 'theme-green': return { '--border-color': '#047857', '--bg-table-header': '#f0fdf4' } as React.CSSProperties;
       case 'theme-black':
-      default:
-        return 'font-serif border-[4px] border-double border-black bg-white';
+      default: return { '--border-color': '#000000', '--bg-table-header': '#f2f2f2' } as React.CSSProperties;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 select-none font-sans" dir="rtl">
+    <div className="min-h-screen bg-slate-50 p-6 select-none font-sans pb-24" dir="rtl">
       <style>
         {`
           @media print {
             body * { visibility: hidden; }
             .print-area, .print-area * { visibility: visible; }
-            .print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; margin: 0; padding: 20px; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; box-shadow: none !important; border: 4px double black !important; }
             .no-print { display: none !important; }
-            .watermark {
-               position: fixed;
-               top: 50%;
-               left: 50%;
-               transform: translate(-50%, -50%);
-               opacity: 0.05;
-               font-size: 8rem;
-               font-weight: 900;
-               color: black;
-               z-index: -1;
-               white-space: nowrap;
-               pointer-events: none;
-            }
+          }
+          .circle-choice {
+             width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border-color); 
+             display: inline-flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold;
+             background: white; color: var(--border-color); margin-left: 8px;
           }
         `}
       </style>
 
-      {/* Interactive Edit Side Panel */}
+      {/* Header */}
+      <div className="max-w-5xl mx-auto bg-slate-900 text-white p-6 rounded-[2rem] mb-8 flex items-center justify-between shadow-xl no-print">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 transition-all">
+            <ArrowRight size={24} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-black flex items-center gap-2">محرر الاختبارات المتقدم</h1>
+            <p className="text-slate-400 text-sm mt-1">قم بتصميم وتعديل ورقة الامتحان باحترافية عالية</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => setShowPaperInfo(true)} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition-all">
+            <Settings size={18} /> ترويسة الورقة
+          </button>
+          <button onClick={() => setShowTemplateDialog(true)} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition-all">
+            <Palette size={18} /> القوالب والمظهر
+          </button>
+          <button onClick={() => window.print()} className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition-all shadow-lg shadow-indigo-500/20">
+            <Printer size={18} /> طباعة
+          </button>
+        </div>
+      </div>
+
+      {/* Main A4 Canvas */}
+      <div 
+        className="print-area w-[210mm] min-h-[297mm] mx-auto p-[15mm_12mm] bg-white shadow-2xl relative font-serif text-black"
+        style={{ ...getThemeVars(), border: '4px double var(--border-color)' }}
+      >
+        {/* Header Section */}
+        <div className="grid grid-cols-3 items-center border-b-[3px] border-double pb-3 mb-4 text-center" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="text-right text-[13px] leading-[1.7] font-bold">
+            <div>الجمهورية اليمنية</div>
+            <div>وزارة التربية والتعليم</div>
+            <div>مكتب التربية ب{paperInfo.governorate}</div>
+            <div>{paperInfo.directorate} - {paperInfo.school}</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <img src={paperInfo.logo} alt="الشعار" className="h-[65px] object-contain mb-1" />
+            <span className="border px-3 py-0.5 text-[11px] font-bold mt-1" style={{ borderColor: 'var(--border-color)' }}>{paperInfo.examTitle}</span>
+            <span className="text-[10px] font-bold mt-1">العام الدراسي {paperInfo.year}</span>
+          </div>
+          <div className="text-left text-[13px] leading-[1.7]">
+            <div><b>المادة:</b> {paperInfo.subject}</div>
+            <div><b>الصف:</b> {paperInfo.grade} - <b>الشعبة:</b> {paperInfo.section}</div>
+            <div><b>الزمن:</b> {paperInfo.time} - <b>الدرجة:</b> {paperInfo.score}</div>
+            <div><b>التاريخ:</b> {paperInfo.date} م</div>
+          </div>
+        </div>
+
+        {/* Student Info Bar */}
+        <div className="flex border-[1.5px] my-4 text-[14px] bg-slate-50" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="flex-[2.5] p-[6px_10px]"><b>اسم الطالب الثلاثي:</b> ........................................................................</div>
+          <div className="flex-1 p-[6px_10px] border-r-[1.5px]" style={{ borderColor: 'var(--border-color)' }}><b>رقم الجلوس:</b> .....................</div>
+        </div>
+
+        {/* Questions Area */}
+        <div className="space-y-6">
+          {questions.map((q, idx) => (
+            <div key={idx} className="relative group hover:bg-slate-50 p-2 -mx-2 rounded-lg transition-colors border border-transparent hover:border-slate-200">
+              
+              {/* Delete Button (No Print) */}
+              <button 
+                onClick={() => setQuestions(questions.filter((_, i) => i !== idx))}
+                className="absolute top-2 left-2 p-1.5 bg-red-100 text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-opacity no-print"
+              >
+                <X size={14} />
+              </button>
+
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-[14.5px] whitespace-nowrap">{idx + 1}.</span>
+                <div className="flex-1">
+                  
+                  {q.type === 'tf' && (
+                    <div className="flex items-center justify-between border-b border-dashed border-slate-300 pb-2">
+                      <div className="font-bold text-[14.5px]">{q.text}</div>
+                      <div className="flex shrink-0">
+                        <div className="circle-choice">ص</div>
+                        <div className="circle-choice">خ</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === 'mcq' && (
+                    <div>
+                      <div className="font-bold text-[14.5px] mb-2">{q.text}</div>
+                      <div className="grid grid-cols-4 gap-4">
+                        {q.options.map((opt: string, oIdx: number) => (
+                          <div key={oIdx} className="flex items-center gap-2">
+                            <div className="circle-choice">{['أ','ب','ج','د'][oIdx]}</div>
+                            <span className="text-[13.5px]">{opt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === 'direct' && (
+                    <div className="pb-8">
+                      <div className="font-bold text-[14.5px] mb-2">{q.text}</div>
+                      <div className="border-b border-dotted border-slate-400 w-full mt-4"></div>
+                      <div className="border-b border-dotted border-slate-400 w-full mt-6"></div>
+                    </div>
+                  )}
+
+                  {q.type === 'complete' && (
+                    <div className="pb-4">
+                      <div className="font-bold text-[14.5px] mb-2">{q.text}</div>
+                    </div>
+                  )}
+
+                  {q.type === 'match' && (
+                    <div className="pb-4">
+                      <div className="font-bold text-[14.5px] mb-2">{q.text || 'صل من العمود (أ) ما يناسبه من العمود (ب):'}</div>
+                      <div className="grid grid-cols-2 gap-8 text-center text-[13.5px]">
+                        <div className="border p-2">العمود أ</div>
+                        <div className="border p-2">العمود ب</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === 'order' && (
+                    <div className="pb-4">
+                      <div className="font-bold text-[14.5px] mb-2">{q.text || 'رتب الأحداث التالية:'}</div>
+                      <div className="flex gap-4">
+                         <div className="circle-choice">( )</div>
+                         <div className="circle-choice">( )</div>
+                         <div className="circle-choice">( )</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === 'qr' && (
+                    <div className="pb-4">
+                      <div className="font-bold text-[14.5px] mb-2">{q.text || 'امسح الرمز الشريطي التالي:'}</div>
+                      <div className="w-24 h-24 border-2 border-black flex items-center justify-center bg-slate-100">
+                        <span className="text-[10px] font-bold">QR CODE</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === 'barcode' && (
+                    <div className="pb-4">
+                      <div className="font-bold text-[14.5px] mb-2">{q.text || 'الرمز الشريطي:'}</div>
+                      <div className="w-40 h-16 border-2 border-black flex items-center justify-center bg-slate-100">
+                        <span className="text-[10px] font-bold">||| | || |||| | |||</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === 'physics' && (
+                    <div>
+                      <div className="font-bold text-[14.5px] mb-2">{q.text}</div>
+                      {q.image && (
+                        <div className="border border-slate-300 p-2 inline-block bg-white mt-2">
+                          <img src={q.image} alt="رسم توضيحي" className="max-w-[300px] h-auto object-contain" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-16 pt-6 border-t-2 flex justify-between items-center font-bold text-sm" style={{ borderColor: 'var(--border-color)' }}>
+          <p>توقيع المعلم: .................................</p>
+          <p>توقيع المدير: .................................</p>
+          <p>تمنياتنا لكم بالتوفيق والنجاح</p>
+        </div>
+      </div>
+
+      {/* Floating Add Button */}
+      <button 
+        onClick={() => setShowAddDialog(true)}
+        className="fixed bottom-8 right-8 w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:scale-105 hover:bg-indigo-700 transition-all no-print z-50"
+      >
+        <PlusCircle size={32} />
+      </button>
+
+      {/* Paper Info Dialog */}
       <AnimatePresence>
-        {editingIndex !== null && (
-          <motion.div 
-            initial={{ opacity: 0, x: -300 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: -300 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 bottom-0 w-96 bg-white z-50 shadow-2xl border-r border-slate-200 no-print flex flex-col"
-          >
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                <Edit3 size={20} className="text-indigo-500" />
-                تعديل السؤال
-              </h3>
-              <button onClick={() => setEditingIndex(null)} className="text-slate-400 hover:text-slate-600 bg-white shadow-sm p-2 rounded-full transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-6 flex-1 overflow-y-auto space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">صيغة السؤال</label>
-                <textarea 
-                  value={editQText}
-                  onChange={(e) => setEditQText(e.target.value)}
-                  rows={6}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-bold text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 resize-none transition-all leading-relaxed"
-                />
+        {showPaperInfo && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center no-print overflow-y-auto">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-3xl p-8 w-full max-w-4xl shadow-2xl my-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-slate-800">بيانات الترويسة والورقة الشاملة</h3>
+                <button onClick={() => setShowPaperInfo(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">الإجابة النموذجية</label>
-                <input 
-                  type="text" 
-                  value={editQAnswer}
-                  onChange={(e) => setEditQAnswer(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-bold text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
-                />
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">المحافظة</label>
+                  <input type="text" value={paperInfo.governorate} onChange={(e) => setPaperInfo({...paperInfo, governorate: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">المديرية</label>
+                  <input type="text" value={paperInfo.directorate} onChange={(e) => setPaperInfo({...paperInfo, directorate: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">المدرسة</label>
+                  <input type="text" value={paperInfo.school} onChange={(e) => setPaperInfo({...paperInfo, school: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">اسم المعلم</label>
+                  <input type="text" value={paperInfo.teacher} onChange={(e) => setPaperInfo({...paperInfo, teacher: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">المادة</label>
+                  <input type="text" value={paperInfo.subject} onChange={(e) => setPaperInfo({...paperInfo, subject: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الصف</label>
+                  <input type="text" value={paperInfo.grade} onChange={(e) => setPaperInfo({...paperInfo, grade: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الشعبة</label>
+                  <input type="text" value={paperInfo.section} onChange={(e) => setPaperInfo({...paperInfo, section: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">العام الدراسي</label>
+                  <input type="text" value={paperInfo.year} onChange={(e) => setPaperInfo({...paperInfo, year: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الفصل</label>
+                  <input type="text" value={paperInfo.term} onChange={(e) => setPaperInfo({...paperInfo, term: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الزمن</label>
+                  <input type="text" value={paperInfo.time} onChange={(e) => setPaperInfo({...paperInfo, time: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الدرجة</label>
+                  <input type="text" value={paperInfo.score} onChange={(e) => setPaperInfo({...paperInfo, score: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">رقم النموذج</label>
+                  <input type="text" value={paperInfo.formNumber} onChange={(e) => setPaperInfo({...paperInfo, formNumber: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">اليوم</label>
+                  <input type="text" value={paperInfo.day} onChange={(e) => setPaperInfo({...paperInfo, day: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">التاريخ الميلادي</label>
+                  <input type="text" value={paperInfo.date} onChange={(e) => setPaperInfo({...paperInfo, date: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">التاريخ الهجري</label>
+                  <input type="text" value={paperInfo.hijriDate} onChange={(e) => setPaperInfo({...paperInfo, hijriDate: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-sm" />
+                </div>
               </div>
-            </div>
-
-            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-              <button 
-                onClick={saveEdit}
-                className="flex-1 bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20"
-              >
-                حفظ التعديلات
-              </button>
-              <button 
-                onClick={() => setEditingIndex(null)}
-                className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
-              >
-                إلغاء
-              </button>
-            </div>
-          </motion.div>
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-slate-500 mb-2">تغيير الشعار أو الختم (اختياري)</label>
+                <div className="flex items-center gap-4">
+                  <img src={paperInfo.logo} alt="Current" className="w-16 h-16 object-contain border border-slate-200 rounded-lg bg-slate-50 p-1" />
+                  <div className="relative overflow-hidden">
+                    <button className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                      <ImageIcon size={16} /> رفع شعار مخصص
+                    </button>
+                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  </div>
+                  <button className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-emerald-200 ml-auto">
+                    حفظ كقالب جديد
+                  </button>
+                </div>
+              </div>
+              <button onClick={() => setShowPaperInfo(false)} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700">حفظ وتطبيق</button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-slate-900 text-white p-6 shadow-xl relative overflow-hidden rounded-[2rem] mb-8 flex items-center justify-between border-b border-slate-800 no-print">
-          <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-          
-          <div className="relative z-10 flex items-center gap-4">
-            <button 
-              onClick={onBack}
-              className="p-3 rounded-2xl bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20 transition-all"
-            >
-              <ArrowRight size={24} />
-            </button>
-            <div>
-              <h1 className="text-3xl font-black text-white flex items-center gap-3">
-                محرر الامتحانات والأتمتة الذكي
-                <span className="bg-indigo-500 text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-widest font-black">AI Powered</span>
-              </h1>
-              <p className="text-slate-400 font-medium text-sm mt-1">
-                ارفع صورة أو اكتب عنوان الدرس وسيقوم النظام بتوليد 3 نماذج لمنع الغش (بابل شيت + مقالي) مبنية على مستويات بلوم.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-12 gap-8">
-          {/* Controls */}
-          <div className="md:col-span-4 space-y-6">
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
+      {/* Add Question Dialog */}
+      <AnimatePresence>
+        {showAddDialog && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center no-print">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-3xl p-8 w-full max-w-4xl shadow-2xl flex flex-col max-h-[85vh]">
+              <div className="flex justify-between items-center mb-6 shrink-0">
+                <h3 className="text-xl font-black text-slate-800">إضافة سؤال للاختبار</h3>
+                <button onClick={() => setShowAddDialog(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+              </div>
               
-              <div className="mb-6 border-2 border-dashed border-slate-300 rounded-2xl p-6 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
-                   onClick={() => setImageUploaded(!imageUploaded)}>
-                <ImageIcon size={32} className={imageUploaded ? "text-indigo-500 mb-2" : "text-slate-400 mb-2"} />
-                <span className="text-sm font-bold text-slate-600 text-center">
-                  {imageUploaded ? "تم إرفاق صورة صفحة الكتاب بنجاح" : "ارفع صورة من صفحة الكتاب (اختياري)"}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex-1 h-px bg-slate-200"></div>
-                <span className="text-xs font-bold text-slate-400">أو</span>
-                <div className="flex-1 h-px bg-slate-200"></div>
-              </div>
-
-              <label className="block text-sm font-bold text-slate-700 mb-2">عنوان الدرس / المادة</label>
-              <input 
-                type="text" 
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="مثال: المعادلات الكيميائية"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all mb-6"
-              />
-
-              <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-                <BrainCircuit size={16} className="text-indigo-500" />
-                مستويات بلوم المعرفية
-              </label>
-              <select 
-                value={bloomLevel}
-                onChange={(e) => setBloomLevel(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all mb-6 appearance-none"
-              >
-                {bloomLevels.map(level => (
-                  <option key={level} value={level}>{level}</option>
-                ))}
-              </select>
-
-              <label className="block text-sm font-bold text-slate-700 mb-2">مستوى الصعوبة</label>
-              <div className="flex gap-2 mb-8">
-                {['سهل', 'متوسط', 'صعب'].map(level => (
-                  <button 
-                    key={level}
-                    onClick={() => setDifficulty(level)}
-                    className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${difficulty === level ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' : 'bg-slate-50 text-slate-500 border border-transparent'}`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-
-              <button 
-                onClick={generateContent}
-                disabled={(!topic && !imageUploaded) || isGenerating}
-                className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-600/20"
-              >
-                {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Wand2 size={20} />}
-                {isGenerating ? 'جاري المعالجة وبناء النماذج...' : 'توليد النماذج الذكية'}
-              </button>
-            </div>
-          </div>
-
-          {/* Results */}
-          <div className="md:col-span-8">
-            <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 min-h-[500px]">
-              {generatedQuestions.length === 0 && !isGenerating && (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-60 py-32 no-print">
-                  <ShieldCheck size={64} className="mb-4 text-slate-300" />
-                  <p className="font-bold text-lg">أداة الأتمتة الذكية المعززة لمنع الغش</p>
-                  <p className="text-sm mt-2 max-w-sm text-center">قم بإدخال المعطيات ليتم توليد 3 نماذج مختلفة للامتحان مع نماذج الإجابة (بابل شيت).</p>
-                </div>
-              )}
-
-              {isGenerating && (
-                <div className="h-full flex flex-col items-center justify-center text-indigo-600 py-32 no-print">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                  >
-                    <Sparkles size={48} />
-                  </motion.div>
-                  <p className="font-bold mt-6 animate-pulse text-lg">يتم الآن تحليل المحتوى وبناء 3 نماذج فريدة...</p>
-                </div>
-              )}
-
-              {generatedQuestions.length > 0 && !isGenerating && (
-                <div className="space-y-6">
-                  {/* Theme Selector & Actions */}
-                  <div className="flex flex-wrap justify-between items-center mb-6 gap-4 no-print border-b border-slate-100 pb-4">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex gap-2 bg-slate-100 p-1 rounded-xl w-fit">
-                        {['النموذج أ', 'النموذج ب', 'النموذج ج'].map((model, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setActiveModel(idx)}
-                            className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                              activeModel === idx ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                            }`}
-                          >
-                            {model}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="flex gap-2 items-center">
-                        <Palette size={16} className="text-slate-400" />
-                        <span className="text-xs font-bold text-slate-500">اختر الثيم:</span>
-                        {themes.map(t => (
-                          <button
-                            key={t.id}
-                            onClick={() => setActiveTheme(t.id as any)}
-                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
-                              activeTheme === t.id ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                            }`}
-                          >
-                            {t.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+              <div className="flex gap-6 overflow-hidden flex-1">
+                {/* Left: Create New */}
+                <div className="w-1/2 border-l border-slate-200 pl-6 flex flex-col h-full">
+                  <h4 className="font-bold text-slate-600 mb-4 flex items-center gap-2"><PenTool size={18} /> إنشاء سؤال جديد</h4>
+                  <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto pr-2">
+                    <button onClick={() => addNewQuestion('direct')} className="bg-slate-50 hover:bg-indigo-50 border border-slate-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">سؤال مباشر</button>
+                    <button onClick={() => addNewQuestion('mcq')} className="bg-slate-50 hover:bg-indigo-50 border border-slate-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">اختيار من متعدد</button>
+                    <button onClick={() => addNewQuestion('tf')} className="bg-slate-50 hover:bg-indigo-50 border border-slate-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">صح وخطأ</button>
+                    <button onClick={() => addNewQuestion('complete')} className="bg-slate-50 hover:bg-indigo-50 border border-slate-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">أكمل الفراغ</button>
+                    <button onClick={() => addNewQuestion('match')} className="bg-slate-50 hover:bg-indigo-50 border border-slate-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">سؤال مزاوجة (وصل)</button>
+                    <button onClick={() => addNewQuestion('order')} className="bg-slate-50 hover:bg-indigo-50 border border-slate-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">سؤال ترتيب</button>
                     
-                    <div className="flex gap-2">
-                      <button className="text-sm font-bold text-slate-600 bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-100">
-                        <Copy size={16} />
-                        نسخ
-                      </button>
-                      <button onClick={handlePrint} className="text-sm font-bold text-white bg-indigo-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors">
-                        <Printer size={16} />
-                        طباعة رسمية
-                      </button>
-                    </div>
+                    <button onClick={() => addNewQuestion('physics')} className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-emerald-800 flex justify-between col-span-2">
+                      محرر الرسم الحر (فيزياء/هندسة) <ArrowUpRight size={16} />
+                    </button>
+                    
+                    <button onClick={() => addNewQuestion('image')} className="bg-orange-50 hover:bg-orange-100 border border-orange-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-orange-800">إضافة صورة</button>
+                    <button onClick={() => addNewQuestion('table')} className="bg-orange-50 hover:bg-orange-100 border border-orange-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-orange-800">إضافة جدول</button>
+                    <button onClick={() => addNewQuestion('math')} className="bg-blue-50 hover:bg-blue-100 border border-blue-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-blue-800">معادلة رياضية</button>
+                    <button onClick={() => addNewQuestion('chem')} className="bg-blue-50 hover:bg-blue-100 border border-blue-200 p-3 rounded-xl text-right font-bold text-sm transition-colors text-blue-800">معادلة كيميائية</button>
+                    
+                    <button onClick={() => addNewQuestion('qr')} className="bg-slate-100 hover:bg-slate-200 border border-slate-300 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">رمز استجابة QR</button>
+                    <button onClick={() => addNewQuestion('barcode')} className="bg-slate-100 hover:bg-slate-200 border border-slate-300 p-3 rounded-xl text-right font-bold text-sm transition-colors text-slate-700">باركود Barcode</button>
+                  </div>
+                </div>
+
+                {/* Right: Bank & AI */}
+                <div className="w-1/2 flex flex-col h-full">
+                  <div className="flex gap-2 mb-4">
+                    <button className="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-indigo-700"><Sparkles size={16} /> توليد بالذكاء الاصطناعي</button>
+                  </div>
+                  <h4 className="font-bold text-slate-600 mb-2 flex items-center gap-2"><Database size={18} /> الاستيراد من بنك الأسئلة</h4>
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                    {savedBank.length === 0 ? (
+                      <div className="text-center text-slate-400 mt-10">
+                        <Database size={32} className="mx-auto mb-2 opacity-50" />
+                        <p className="text-sm font-bold">البنك فارغ</p>
+                      </div>
+                    ) : (
+                      savedBank.map((q, idx) => (
+                        <div key={idx} className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between hover:border-indigo-200 transition-colors cursor-pointer" onClick={() => importFromBank(q)}>
+                          <div className="flex-1">
+                            <div className="text-xs font-bold text-indigo-600 mb-1">{q.type === 'tf' ? 'صح وخطأ' : 'اختيارات'}</div>
+                            <div className="text-sm font-bold text-slate-800 line-clamp-2">{q.text}</div>
+                          </div>
+                          <button className="bg-white border border-slate-200 p-2 rounded-lg text-indigo-600 hover:bg-indigo-50 shrink-0 mr-4">
+                            <PlusCircle size={20} />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Physics Drawing Editor Dialog */}
+      <AnimatePresence>
+        {showPhysicsDraw && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center no-print">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-3xl p-6 w-full max-w-4xl shadow-2xl flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  <PenTool className="text-emerald-500" />
+                  محرر الرسوم الفيزيائية والهندسية
+                </h3>
+                <button onClick={() => setShowPhysicsDraw(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="col-span-1 space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">صيغة السؤال</label>
+                    <textarea 
+                      value={physicsQText}
+                      onChange={(e) => setPhysicsQText(e.target.value)}
+                      placeholder="مثال: من خلال الرسم الموضح، احسب الشد في الخيط..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold resize-none h-32 focus:outline-none focus:border-emerald-500"
+                    />
                   </div>
                   
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeModel + activeTheme}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="space-y-4"
-                    >
-                      <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 mb-6 flex items-start gap-3 no-print">
-                        <ShieldCheck className="text-indigo-500 shrink-0 mt-0.5" size={20} />
-                        <div>
-                          <p className="text-sm font-bold text-indigo-900 mb-1">حماية ضد الغش مفعلة</p>
-                          <p className="text-xs text-indigo-700">هذا النموذج يحتوي على أسئلة بترتيب وتنسيق مختلف كلياً عن النماذج الأخرى مع الحفاظ على نفس وزن التقييم ونفس الأهداف التعليمية حسب تصنيف بلوم ({bloomLevel}).</p>
-                        </div>
-                      </div>
-
-                      {/* Interactive A4 Page */}
-                      <div className={`print-area w-[210mm] min-h-[297mm] mx-auto p-[15mm_12mm] relative bg-white overflow-hidden mb-12 shadow-xl print:shadow-none print:m-0 ${getThemeStyles()}`}>
-                        <div className="watermark absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none z-0">
-                          <span className="text-[8rem] font-black transform -rotate-45 whitespace-nowrap text-black">وزارة التربية والتعليم</span>
-                        </div>
-                        
-                        <div className="relative z-10">
-                          {/* Header */}
-                          <div className="grid grid-cols-3 items-center border-b-[3px] border-double border-current pb-3 mb-4 text-center">
-                            <div className="text-right text-sm leading-relaxed font-bold text-black">
-                              <div>وزارة التربية والتعليم</div>
-                              <div>مكتب التربية والتعليم بالمحافظة</div>
-                              <div>إدارة الامتحانات والاختبارات الدورية</div>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <div className="w-16 h-16 border-2 border-dashed border-slate-500 rounded-full flex items-center justify-center text-[10px] text-slate-500 mb-2">الشعار الرسمي</div>
-                              <span className="border border-current text-black px-3 py-0.5 text-[11px] font-bold">وثيقة امتحانية رسمية</span>
-                            </div>
-                            <div className="text-left text-sm leading-relaxed font-bold text-black">
-                              <div>المادة: {topic || '........'}</div>
-                              <div>الصف: الثالث الثانوي</div>
-                              <div>الزمن: ساعتان ونصف</div>
-                              <div>الدورة: الفصل الدراسي الأول</div>
-                            </div>
-                          </div>
-
-                          {/* Meta Data Line */}
-                          <div className="flex border-[1.5px] border-current my-3 text-sm">
-                            <div className="flex-[2.5] p-2 border-l-[1.5px] border-current text-black"><b>اسم الطالب / الإدخال الثلاثي:</b> ....................................................</div>
-                            <div className="flex-1 p-2 border-l-[1.5px] border-current text-black"><b>رقم الجلوس:</b> .....................</div>
-                            <div className="flex-1 p-2 text-black"><b>القاعة:</b> .............</div>
-                          </div>
-
-                          <div className="text-center font-serif text-[21px] font-bold my-4 text-black">
-                            امتحانات النقل لنهاية الفصل الدراسي الأول لعام ٢٠٢٦ م (النموذج {['أ', 'ب', 'ج'][activeModel]})
-                          </div>
-
-                        {/* Questions */}
-                        <div className="space-y-6">
-                          {generatedQuestions[activeModel].map((item: any, idx: number) => (
-                            <div 
-                              key={idx} 
-                              onClick={() => openEditDialog(idx)}
-                              className="group rounded-xl hover:bg-slate-50 hover:shadow-sm transition-all cursor-pointer border border-transparent hover:border-indigo-200 relative mb-[22px]"
-                            >
-                              <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity no-print">
-                                <button className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200">
-                                  <Edit3 size={16} />
-                                </button>
-                              </div>
-
-                              <div className="flex items-center justify-between gap-4 mb-3 border-b-[1.5px] border-current pb-1">
-                                <div className="font-bold text-[14.5px] flex-1 text-black">
-                                  السؤال {idx + 1}: {item.q}
-                                </div>
-                                <div className="border border-current px-2 py-0.5 text-xs font-bold bg-[#f8fafc] text-black">
-                                  الدرجة: ١٠
-                                </div>
-                              </div>
-
-                              <div className="mt-2 text-sm text-black">
-                                  <div className="no-print mb-2">
-                                    <span className="text-sm text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-md border border-emerald-100 inline-block">
-                                      الإجابة النموذجية: {item.answer}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-300">
-                                     <div className="font-bold pl-3 font-mono text-black">( &nbsp; &nbsp; )</div>
-                                     <div className="flex-1">{item.q}</div>
-                                  </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="mt-16 pt-6 border-t-2 border-current flex justify-between items-center font-bold text-sm text-black">
-                          <p>معلم المادة: .................................</p>
-                          <p>توقيع الموجه: .................................</p>
-                          <p>تمنياتنا لكم بالنجاح والتوفيق</p>
-                        </div>
-                      </div>
-                      </div>
-
-                    </motion.div>
-                  </AnimatePresence>
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={aiCorrectEnabled} onChange={(e) => setAiCorrectEnabled(e.target.checked)} className="w-5 h-5 accent-emerald-600 rounded" />
+                      <span className="text-sm font-bold text-emerald-900 flex items-center gap-1">
+                        <Sparkles size={16} /> تفعيل التصحيح الذكي للأشكال
+                      </span>
+                    </label>
+                    <p className="text-xs text-emerald-700 mt-2">سيقوم النظام بتعديل الخطوط المتعرجة لتصبح مستقيمة أو دائرية بانتظام.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={clearCanvas} className="bg-slate-100 text-slate-700 font-bold py-2 rounded-lg text-sm hover:bg-slate-200">مسح اللوحة</button>
+                    <button onClick={savePhysicsQuestion} className="bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-600/20">إدراج في الورقة</button>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                <div className="col-span-2 flex flex-col gap-4">
+                  <div className="border-2 border-dashed border-slate-300 rounded-2xl overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] bg-white relative cursor-crosshair h-[400px]">
+                    <canvas 
+                      ref={canvasRef}
+                      width={600}
+                      height={400}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseOut={stopDrawing}
+                      className="w-full h-full"
+                      style={{ touchAction: 'none' }}
+                    />
+                    
+                    {/* Mock Tools overlay */}
+                    <div className="absolute top-2 right-2 bg-white shadow-lg rounded-xl p-2 flex flex-col gap-1 border border-slate-100 max-h-[380px] overflow-y-auto w-12 items-center custom-scrollbar">
+                      <button className="p-2 bg-emerald-50 rounded-lg text-emerald-600 mb-2 border border-emerald-200" title="قلم حر"><PenTool size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="خط مستقيم"><ArrowUpRight size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="دائرة"><Circle size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="مربع"><Square size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="مثلث"><Triangle size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="نص"><Type size={16}/></button>
+                      <div className="w-8 h-px bg-slate-200 my-1"></div>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-indigo-500 bg-indigo-50" title="تصحيح الأشكال الذكي (AI)"><Wand2 size={16}/></button>
+                      <div className="w-8 h-px bg-slate-200 my-1"></div>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="بطارية"><Battery size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="مغناطيس"><Magnet size={16}/></button>
+                      <div className="w-8 h-px bg-slate-200 my-1"></div>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="تكبير"><ZoomIn size={16}/></button>
+                      <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="تصغير"><ZoomOut size={16}/></button>
+                      <button className="p-2 hover:bg-red-50 rounded-lg text-red-500 mt-2" title="حذف"><Trash2 size={16}/></button>
+                    </div>
+                  </div>
+
+                  {/* Keyboard for Physics/Math */}
+                  <div className="bg-slate-100 border border-slate-200 rounded-xl p-3">
+                    <div className="text-xs font-bold text-slate-500 mb-2">لوحة إدراج الرموز والمعادلات (إدراج في الرسم)</div>
+                    <div className="grid grid-cols-10 gap-2">
+                      {['1', '2', '3', '4', '5', '+', '-', '=', '×', '÷'].map(sym => (
+                        <button key={sym} className="bg-white border border-slate-200 p-2 rounded-lg font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">{sym}</button>
+                      ))}
+                      {['6', '7', '8', '9', '0', '(', ')', '√', 'π', 'θ'].map(sym => (
+                        <button key={sym} className="bg-white border border-slate-200 p-2 rounded-lg font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">{sym}</button>
+                      ))}
+                      {['α', 'β', 'γ', 'Δ', 'Ω', 'μ', 'Σ', '∞', '∫', 'V'].map(sym => (
+                        <button key={sym} className="bg-white border border-slate-200 p-2 rounded-lg font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">{sym}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </div>
+        )}
+      </AnimatePresence>
+
+      {/* Themes Dialog */}
+      <AnimatePresence>
+        {showTemplateDialog && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center no-print">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-3xl p-8 w-full max-w-3xl shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-slate-800">مظهر وقوالب الاختبار</h3>
+                <button onClick={() => setShowTemplateDialog(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+              </div>
+              
+              <h4 className="font-bold text-sm text-slate-500 mb-3">القوالب الجاهزة</h4>
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                {[
+                  { id: 'theme-black', name: 'النموذج الوزاري الرسمي', desc: 'قالب رسمي صارم للشهادة الثانوية العامة.', color: '#000000', bg: '#ffffff' },
+                  { id: 'theme-navy', name: 'النموذج الأزرق الملكي', desc: 'مناسب للامتحانات الشهرية والتجريبية.', color: '#1e3a8a', bg: '#f0f4f8' },
+                  { id: 'theme-green', name: 'النموذج الأخضر الإداري', desc: 'مناسب للمسارات العلمية والجامعية.', color: '#047857', bg: '#f0fdf4' }
+                ].map(t => (
+                  <div key={t.id} className={`border-2 rounded-2xl overflow-hidden transition-all ${activeTheme === t.id ? 'border-indigo-600 ring-4 ring-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                    <div className="h-32 p-4 flex flex-col items-center justify-center relative border-b border-slate-200" style={{ backgroundColor: t.bg }}>
+                      <div className="w-16 h-16 rounded-full border-4 shadow-sm" style={{ borderColor: t.color }}></div>
+                      <div className="w-3/4 h-2 rounded mt-4 opacity-20" style={{ backgroundColor: t.color }}></div>
+                      <div className="w-1/2 h-2 rounded mt-2 opacity-20" style={{ backgroundColor: t.color }}></div>
+                      
+                      {activeTheme === t.id && (
+                        <div className="absolute top-3 left-3 bg-indigo-600 text-white p-1 rounded-full">
+                          <Check size={16} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 bg-white">
+                      <h4 className="font-bold text-slate-800 mb-1">{t.name}</h4>
+                      <p className="text-xs text-slate-500 mb-4">{t.desc}</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setActiveTheme(t.id as any)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-sm transition-colors">استخدام وتطبيق</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={() => setShowTemplateDialog(false)} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700">تطبيق المظهر</button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

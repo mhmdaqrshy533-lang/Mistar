@@ -8,7 +8,7 @@ import Dashboard from './components/Dashboard';
 import FinalResults from './pages/FinalResults';
 import DailyPlan from './pages/DailyPlan';
 import Attendance from './pages/Attendance';
-import AIGenerator from './pages/AIGenerator';
+import AITeacherWorkspace from './pages/AITeacherWorkspace';
 import AnalyticalDashboard from './pages/AnalyticalDashboard';
 import TimetableScheduler from './pages/TimetableScheduler';
 import BubbleSheetProcessor from './pages/BubbleSheetProcessor';
@@ -16,24 +16,66 @@ import Badges from './pages/Badges';
 import Certificates from './pages/Certificates';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Construction } from 'lucide-react';
-import VisionCanvas from './pages/VisionCanvas';
+import MistarEduOS from './pages/MistarEduOS';
+import NotificationCenter from './components/NotificationCenter';
+import { useOS } from './context/OSContext';
 import SmartGrading from './pages/SmartGrading';
 import GradeRecords from './pages/GradeRecords';
 import SmartMemos from './pages/SmartMemos';
 import OfficialMemos from './pages/OfficialMemos';
 import TermPlan from './pages/TermPlan';
+import Archive from './pages/Archive';
+import ExportCenter from './pages/ExportCenter';
+import Settings from './pages/Settings';
+import BubbleSheets from './pages/BubbleSheets';
+import QuestionBank from './pages/QuestionBank';
 import { Section } from './types';
 
 export default function App() {
-  const [activePage, setActivePage] = useState<string>('dashboard');
+  const { activeApplet, launchApplet } = useOS();
+  const activePage = activeApplet || 'dashboard';
+  const setActivePage = launchApplet;
 
   const renderPage = () => {
     switch (activePage) {
       case 'dashboard':
         return <Dashboard onSelect={setActivePage} onOpenBadges={() => setActivePage('badges')} />;
-      case 'exams':
-        return <AIGenerator onBack={() => setActivePage('dashboard')} />;
+      case 'dashboard_overview':
+        return <AnalyticalDashboard onBack={() => setActivePage('dashboard')} />;
+      case 'document_editor':
+        return <OfficialMemos onBack={() => setActivePage('dashboard')} />;
+      case 'exams_section':
+        return <AITeacherWorkspace onBack={() => setActivePage('dashboard')} />;
+      case 'attendance_section':
+        return <Attendance onBack={() => setActivePage('dashboard')} />;
+      case 'grades_section':
+        return <GradeRecords onBack={() => setActivePage('dashboard')} />;
+      case 'student_affairs':
+        return <Badges onBack={() => setActivePage('dashboard')} />;
+      case 'plans_section':
+        return <DailyPlan onBack={() => setActivePage('dashboard')} />;
+      case 'question_bank':
+        return <QuestionBank onBack={() => setActivePage('dashboard')} />;
+      case 'bubble_sheets':
+        return <BubbleSheets onBack={() => setActivePage('dashboard')} />;
+      case 'certificates_section':
+        return <Certificates onBack={() => setActivePage('dashboard')} />;
+      case 'archive_section':
+        return <Archive onBack={() => setActivePage('dashboard')} />;
+      case 'library_section':
+        return <SmartMemos onBack={() => setActivePage('dashboard')} />;
+      case 'teacher_tools':
+        return <TimetableScheduler onBack={() => setActivePage('dashboard')} />;
+      case 'ai_section':
+        return <MistarEduOS onBack={() => setActivePage('dashboard')} />;
+      case 'print_export':
+        return <ExportCenter onBack={() => setActivePage('dashboard')} />;
+      case 'settings':
+        return <Settings onBack={() => setActivePage('dashboard')} />;
+      
+      // Kept for direct access or future nested routes
       case 'automation':
+      case 'smart_correction':
         return <BubbleSheetProcessor onBack={() => setActivePage('dashboard')} />;
       case 'monthly':
         return <AnalyticalDashboard onBack={() => setActivePage('dashboard')} />;
@@ -41,18 +83,12 @@ export default function App() {
         return <DailyPlan onBack={() => setActivePage('dashboard')} />;
       case 'term_plan':
         return <TermPlan onBack={() => setActivePage('dashboard')} />;
-      case 'attendance':
-        return <Attendance onBack={() => setActivePage('dashboard')} />;
       case 'results':
         return <FinalResults onBack={() => setActivePage('dashboard')} />;
       case 'progress_cards':
         return <GradeRecords onBack={() => setActivePage('dashboard')} />;
-      case 'certificates':
-        return <Certificates onBack={() => setActivePage('dashboard')} />;
       case 'badges':
         return <Badges onBack={() => setActivePage('dashboard')} />;
-      case 'book_editor':
-        return <SmartMemos onBack={() => setActivePage('dashboard')} />;
       case 'official_memos':
         return <OfficialMemos onBack={() => setActivePage('dashboard')} />;
       default:
@@ -92,6 +128,7 @@ export default function App() {
           {renderPage()}
         </motion.div>
       </AnimatePresence>
+      <NotificationCenter />
     </div>
   );
 }

@@ -12,26 +12,37 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 const THEMES = [
-  { id: 'classic', name: 'كلاسيكي (ذهبي)', borderUrl: "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22none%22 stroke=%22%23b49040%22 stroke-width=%2220%22 stroke-dasharray=%2230,10%22/></svg>')" },
-  { id: 'modern', name: 'عصري (أزرق)', borderUrl: "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22none%22 stroke=%22%232563eb%22 stroke-width=%2215%22/></svg>')" },
-  { id: 'minimal', name: 'بسيط (أخضر)', borderUrl: "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22none%22 stroke=%22%230f766e%22 stroke-width=%2210%22 stroke-dasharray=%2210,10%22/></svg>')" },
+  { id: 'graduation', name: 'شهادة تخرج (عرضي)', isPortrait: false, 
+    bgClass: 'bg-[radial-gradient(circle_at_top_right,#fcfaf2,#ffffff)] border-[10px] border-double border-[#1e3a8a] text-slate-800' 
+  },
+  { id: 'appreciation', name: 'شهادة تفوق (عرضي)', isPortrait: false, 
+    bgClass: 'bg-[#fffdf9] border border-slate-200 text-slate-800' 
+  },
+  { id: 'attendance', name: 'شهادة حضور (عرضي)', isPortrait: false, 
+    bgClass: 'bg-white border border-slate-300 text-slate-800' 
+  },
+  { id: 'academic', name: 'شهادة أكاديمية (طولي)', isPortrait: true, 
+    bgClass: 'bg-white border-[20px] border-transparent text-slate-800' 
+  },
 ];
 
 export default function Certificates({ onBack }: { onBack: () => void }) {
-  const [selectedTheme, setSelectedTheme] = useState('classic');
+  const [selectedTheme, setSelectedTheme] = useState('graduation');
   const [editingField, setEditingField] = useState<string | null>(null);
   
   const [certData, setCertData] = useState(() => {
     const saved = localStorage.getItem('certificateData');
     if (saved) return JSON.parse(saved);
     return {
-      title: 'شهادة شكر وتقدير',
-      subtitle: 'تمنح إدارة المدرسة هذه الشهادة للطالب:',
-      studentName: 'أحمد محمد عبدالله',
-      reason: 'لتفوقه العلمي وحصوله على المركز الأول في الصف الثالث الإعدادي للعام الدراسي 2026-2027.',
-      date: '2026/05/20',
-      managerName: 'أ. صالح خالد',
-      teacherName: 'أ. محمود سعيد'
+      institution: 'مدرسة عباد بن بشر الابتدائية',
+      subHeader: 'إدارة الامتحانات والاختبارات الدورية',
+      title: 'شهادة تخرج',
+      subtitle: 'وثيقة رسمية معتمدة',
+      bodyPre: 'يسر إدارة المدرسة أن تمنح هذه الشهادة للطالب المتميز:',
+      studentName: 'سهيل الهزبري',
+      bodyPost: 'لتخرجه من المرحلة الابتدائية للعام الدراسي ١٤٤٧ هـ، متمنين له دوام التوفيق والنجاح في مسيرته العلمية.',
+      sign1: 'مدير المدرسة: محمود البلوي',
+      sign2: 'الموجه الطلابي: عبدالإله الشريف'
     };
   });
 
@@ -50,6 +61,46 @@ export default function Certificates({ onBack }: { onBack: () => void }) {
       setCertData({ ...certData, [editingField]: val });
     }
     setEditingField(null);
+  };
+
+  const renderDecorations = () => {
+    switch(activeTheme.id) {
+      case 'graduation':
+        return (
+          <>
+            <div className="absolute inset-1 border-2 border-[#b45309] pointer-events-none z-0"></div>
+            <div className="absolute top-[15px] right-[15px] w-[60px] h-[60px] border-2 border-b-0 border-l-0 border-[#b45309] pointer-events-none z-10"></div>
+            <div className="absolute top-[15px] left-[15px] w-[60px] h-[60px] border-2 border-b-0 border-r-0 border-[#b45309] pointer-events-none z-10"></div>
+            <div className="absolute bottom-[15px] right-[15px] w-[60px] h-[60px] border-2 border-t-0 border-l-0 border-[#b45309] pointer-events-none z-10"></div>
+            <div className="absolute bottom-[15px] left-[15px] w-[60px] h-[60px] border-2 border-t-0 border-r-0 border-[#b45309] pointer-events-none z-10"></div>
+          </>
+        );
+      case 'appreciation':
+        return (
+          <>
+            <div className="absolute bottom-0 left-0 w-[220px] h-[220px] bg-[linear-gradient(135deg,transparent_50%,#0f172a_50%)] pointer-events-none z-0"></div>
+            <div className="absolute top-0 right-[50px] w-[100px] h-[160px] bg-[#0f172a] z-10 flex justify-center pb-5" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 85%, 0% 100%)' }}>
+              <div className="mt-4 w-[70px] h-[70px] bg-[linear-gradient(135deg,#bf953f,#fcf6ba,#b38728,#fbf5b7,#aa771c)] rounded-full flex justify-center items-center text-[10px] font-black text-[#0f172a] text-center shadow-md">
+                متميز<br/>بالعطاء
+              </div>
+            </div>
+          </>
+        );
+      case 'attendance':
+        return (
+          <>
+            <div className="absolute top-0 left-0 right-0 h-[35px] bg-[linear-gradient(90deg,#1e40af,#3b82f6,transparent)] z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0 60%)' }}></div>
+            <div className="absolute bottom-0 left-0 right-0 h-[45px] bg-[linear-gradient(270deg,#1e40af,#60a5fa,transparent)] z-10" style={{ clipPath: 'polygon(15% 0, 100% 40%, 100% 100%, 0 100%)' }}></div>
+          </>
+        );
+      case 'academic':
+        return (
+          <div className="absolute inset-0 border-[20px] border-transparent pointer-events-none z-10" style={{ borderImage: 'linear-gradient(45deg, #064e3b, #047857, #065f46, #0f766e) 30 round' }}>
+            <div className="absolute inset-0.5 border-2 border-[#064e3b]"></div>
+          </div>
+        );
+      default: return null;
+    }
   };
 
   return (
@@ -141,87 +192,71 @@ export default function Certificates({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        {/* Certificate Preview A4 Landscape */}
-        <div className="flex-1 bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden flex justify-center items-center p-8 print:p-0 print:bg-white print:border-none">
+        {/* Certificate Preview */}
+        <div className="flex-1 bg-slate-100 rounded-2xl border border-slate-200 overflow-auto flex justify-center items-center p-8 print:p-0 print:bg-white print:border-none print:overflow-visible">
           <div 
-            className="print-area w-[297mm] h-[210mm] bg-white shadow-2xl relative p-12 transition-all duration-300 print:shadow-none"
-            style={{ 
-              backgroundImage: activeTheme.borderUrl, 
-              backgroundPosition: 'center', 
-              backgroundSize: 'calc(100% - 20px) calc(100% - 20px)', 
-              backgroundRepeat: 'no-repeat'
-            }}
+            className={`print-area bg-white shadow-2xl relative transition-all duration-300 print:shadow-none overflow-hidden ${activeTheme.bgClass} ${activeTheme.isPortrait ? 'w-[210mm] h-[297mm] p-[20mm_18mm]' : 'w-[297mm] h-[210mm] p-[16mm_20mm]'}`}
           >
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.03] no-print print:opacity-[0.05]">
-              <h1 className="text-9xl font-black text-black transform -rotate-45 whitespace-nowrap">وزارة التربية والتعليم</h1>
+            {renderDecorations()}
+
+            {/* Watermark */}
+            <div className="absolute inset-0 flex justify-center items-center opacity-[0.04] pointer-events-none z-0">
+              <span className="text-[10rem] font-black transform -rotate-45 whitespace-nowrap text-slate-900">وزارة التعليم</span>
             </div>
 
-            <div className="w-full h-full border-[3px] border-double border-slate-300/50 p-12 flex flex-col items-center justify-center text-center relative z-10">
+            <div className={`relative z-20 flex flex-col h-full ${activeTheme.isPortrait ? 'justify-start' : 'justify-between'}`}>
               
-              <div className="absolute top-12 left-12 text-right">
-                <p className="font-bold text-sm text-slate-500">التاريخ</p>
-                <p 
-                  onClick={() => handleEdit('date')} 
-                  className="font-bold cursor-pointer hover:bg-slate-100 px-2 py-1 rounded"
+              {/* Header */}
+              <div className={`flex ${activeTheme.isPortrait ? 'flex-col gap-4 text-center items-center mb-8' : 'justify-between items-center mb-6'}`}>
+                <div className={`text-[13px] font-bold leading-relaxed ${activeTheme.isPortrait ? 'text-center' : 'text-right'}`}>
+                  <div className="cursor-pointer hover:bg-black/5 rounded px-1" onClick={() => handleEdit('institution')}>{certData.institution}</div>
+                  <div className="font-normal text-slate-600 text-[12px] mt-1 cursor-pointer hover:bg-black/5 rounded px-1" onClick={() => handleEdit('subHeader')}>{certData.subHeader}</div>
+                </div>
+                <div className="w-[90px] h-[90px] border-2 border-dashed border-slate-400 rounded-full flex justify-center items-center text-slate-400 text-xs font-bold">
+                  الشعار
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className={`text-center ${activeTheme.isPortrait ? 'flex-1 flex flex-col justify-center' : ''}`}>
+                <h1 
+                  onClick={() => handleEdit('title')} 
+                  className={`font-serif font-bold mb-2 cursor-pointer hover:bg-black/5 rounded px-4 py-1 transition-colors ${activeTheme.id === 'academic' ? 'text-[48px] text-[#047857]' : activeTheme.id === 'appreciation' ? 'text-[42px] text-[#1e3a8a]' : 'text-[42px] text-[#0f172a]'}`}
                 >
-                  {certData.date}
+                  {certData.title}
+                </h1>
+
+                <p 
+                  onClick={() => handleEdit('subtitle')}
+                  className="text-[18px] font-bold text-slate-500 mb-8 tracking-wide cursor-pointer hover:bg-black/5 rounded px-4 py-1 inline-block"
+                >
+                  {certData.subtitle}
                 </p>
-              </div>
 
-              <div className="absolute top-12 right-12 text-center leading-tight">
-                <p className="font-bold text-sm">الجمهورية اليمنية</p>
-                <p className="font-bold text-sm">وزارة التربية والتعليم</p>
-              </div>
-
-              <Award size={64} className="text-yellow-500 mb-6" />
-
-              <h1 
-                onClick={() => handleEdit('title')} 
-                className="text-5xl font-black text-slate-800 mb-8 cursor-pointer hover:bg-slate-50 px-6 py-2 rounded-2xl transition-colors font-serif"
-              >
-                {certData.title}
-              </h1>
-
-              <p 
-                onClick={() => handleEdit('subtitle')}
-                className="text-xl font-bold text-slate-600 mb-6 cursor-pointer hover:bg-slate-50 px-4 py-1 rounded-lg"
-              >
-                {certData.subtitle}
-              </p>
-
-              <h2 
-                onClick={() => handleEdit('studentName')}
-                className="text-4xl font-black text-indigo-700 mb-8 cursor-pointer hover:bg-indigo-50 px-6 py-2 rounded-xl"
-              >
-                {certData.studentName}
-              </h2>
-
-              <p 
-                onClick={() => handleEdit('reason')}
-                className="text-xl font-bold text-slate-700 max-w-2xl leading-relaxed cursor-pointer hover:bg-slate-50 p-4 rounded-xl"
-              >
-                {certData.reason}
-              </p>
-
-              <div className="w-full flex justify-between mt-16 px-16">
-                <div className="text-center">
-                  <p 
-                    onClick={() => handleEdit('teacherName')}
-                    className="font-bold text-lg mb-4 cursor-pointer hover:bg-slate-50 px-4 py-1 rounded-lg"
+                <div className="text-[17px] leading-[2.2] text-slate-700 mx-auto max-w-[85%]">
+                  <span onClick={() => handleEdit('bodyPre')} className="cursor-pointer hover:bg-black/5 rounded px-2">{certData.bodyPre}</span>
+                  <br />
+                  <div 
+                    onClick={() => handleEdit('studentName')}
+                    className={`font-serif text-[32px] font-bold border-b-2 border-dotted px-4 py-1 inline-block my-3 cursor-pointer hover:bg-black/5 rounded ${activeTheme.id === 'academic' ? 'text-[#064e3b] border-[#047857]' : 'text-[#1e3a8a] border-[#b45309]'}`}
                   >
-                    {certData.teacherName}
-                  </p>
-                  <p className="text-slate-500 border-t border-slate-300 pt-2 px-8">معلم المادة</p>
+                    {certData.studentName}
+                  </div>
+                  <br />
+                  <span onClick={() => handleEdit('bodyPost')} className="cursor-pointer hover:bg-black/5 rounded px-2">{certData.bodyPost}</span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-between items-end mt-12 px-8">
+                <div className="text-center font-bold text-[14px] text-slate-800">
+                  <div onClick={() => handleEdit('sign1')} className="cursor-pointer hover:bg-black/5 rounded px-2 pb-1">{certData.sign1}</div>
+                  <div className="w-[140px] border-t-[1.5px] border-slate-400 mt-8 mb-1 mx-auto"></div>
                 </div>
                 
-                <div className="text-center">
-                  <p 
-                    onClick={() => handleEdit('managerName')}
-                    className="font-bold text-lg mb-4 cursor-pointer hover:bg-slate-50 px-4 py-1 rounded-lg"
-                  >
-                    {certData.managerName}
-                  </p>
-                  <p className="text-slate-500 border-t border-slate-300 pt-2 px-8">مدير المدرسة</p>
+                <div className="text-center font-bold text-[14px] text-slate-800">
+                  <div onClick={() => handleEdit('sign2')} className="cursor-pointer hover:bg-black/5 rounded px-2 pb-1">{certData.sign2}</div>
+                  <div className="w-[140px] border-t-[1.5px] border-slate-400 mt-8 mb-1 mx-auto"></div>
                 </div>
               </div>
 
