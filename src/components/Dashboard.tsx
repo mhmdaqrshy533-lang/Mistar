@@ -3,187 +3,196 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
-  FileText, Printer, CalendarDays, UserCheck, LayoutDashboard, 
+  FileText, CalendarDays, UserCheck, LayoutDashboard, 
   Users, GraduationCap, Database, Award, Archive, Library, 
-  Wrench, Settings, BrainCircuit, FileSignature, Trophy, 
-  Activity, Send, MessageCircle, HelpCircle, Lock, Youtube, 
-  AlertTriangle, Brain, Sparkles, ScanLine, Cpu, BellRing, ChevronLeft, Command
+  Settings, FileSignature, Trophy, Search, Plus, Bell, HelpCircle,
+  Activity, Send, ChevronDown, CheckCircle2, Wifi, HardDrive, Database as DatabaseIcon
 } from 'lucide-react';
 import { Section } from '../types';
-import { useGamification } from '../core/GamificationSystem';
 
-export const sections: Section[] = [
-  { id: 'dashboard_overview', title: 'التحليلات الوطنية', icon: 'LayoutDashboard', description: 'رؤية شاملة للأداء', color: 'bg-indigo-600' },
-  { id: 'smart_correction', title: 'التصحيح الذكي', icon: 'ScanLine', description: 'OCR/OMR فوري', color: 'bg-emerald-600' },
-  { id: 'document_editor', title: 'المستندات الرسمية', icon: 'FileText', description: 'خطابات ونماذج', color: 'bg-blue-600' },
-  { id: 'exams_section', title: 'محرر الاختبارات', icon: 'FileSignature', description: 'توليد ذكي للأسئلة', color: 'bg-purple-600' },
-  { id: 'attendance_section', title: 'الحضور الاستباقي', icon: 'UserCheck', description: 'متابعة ذكية', color: 'bg-rose-600' },
-  { id: 'grades_section', title: 'سجل الدرجات', icon: 'GraduationCap', description: 'رصد وتحليل', color: 'bg-amber-600' },
-  { id: 'student_affairs', title: 'شؤون الطلاب', icon: 'Users', description: 'تتبع السلوك والميول', color: 'bg-orange-600' },
-  { id: 'plans_section', title: 'المسار التعليمي', icon: 'CalendarDays', description: 'خطط ديناميكية', color: 'bg-teal-600' },
-  { id: 'question_bank', title: 'بنك المعرفة', icon: 'Database', description: 'أسئلة وتصنيفات', color: 'bg-cyan-600' },
-  { id: 'certificates_section', title: 'سجلات الإنجاز', icon: 'Award', description: 'محافظ رقمية', color: 'bg-pink-600' },
-  { id: 'archive_section', title: 'الأرشيف المركزي', icon: 'Archive', description: 'حفظ آمن للملفات', color: 'bg-slate-600' },
-  { id: 'library_section', title: 'المكتبة الرقمية', icon: 'Library', description: 'مصادر تفاعلية', color: 'bg-sky-600' },
-  { id: 'teacher_tools', title: 'مساعد التدريس', icon: 'Wrench', description: 'أدوات المعلم الذكية', color: 'bg-lime-600' },
-  { id: 'ai_section', title: 'Mistar EduOS', icon: 'BrainCircuit', description: 'الرؤية الوطنية 2040', color: 'bg-fuchsia-600' },
-  { id: 'print_export', title: 'بوابة التصدير', icon: 'Printer', description: 'التقارير الرسمية', color: 'bg-emerald-500' },
-  { id: 'settings', title: 'إعدادات النظام', icon: 'Settings', description: 'تخصيص وبيانات', color: 'bg-slate-700' }
+export const sections: (Section & { stat: string })[] = [
+  { id: 'exams_section', title: 'إنشاء الامتحانات', icon: 'FileSignature', description: 'إنشاء الامتحانات وأوراق العمل والاختبارات.', stat: 'آخر تعديل: اليوم', color: 'bg-violet-600/20 text-violet-400 border-violet-500/30' },
+  { id: 'grades_section', title: 'كشوف الدرجات', icon: 'GraduationCap', description: 'إدارة السجلات الأكاديمية والدرجات.', stat: 'الرصد: مكتمل', color: 'bg-blue-600/20 text-blue-400 border-blue-500/30' },
+  { id: 'attendance_section', title: 'الحضور والغياب', icon: 'UserCheck', description: 'إدارة الحضور اليومي وكشوف الغياب.', stat: 'عدد السجلات: 142 سجل', color: 'bg-cyan-600/20 text-cyan-400 border-cyan-500/30' },
+  { id: 'certificates_section', title: 'الشهادات والنتائج', icon: 'Award', description: 'إصدار الشهادات والتقارير النهائية.', stat: 'تم الإصدار: 320', color: 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30' },
+  { id: 'document_editor', title: 'الوثائق الإدارية', icon: 'FileText', description: 'تعاميم ومذكرات ومحاضر رسمية.', stat: 'عدد القوالب: 24 قالب', color: 'bg-purple-600/20 text-purple-400 border-purple-500/30' },
+  { id: 'question_bank', title: 'بنك الأسئلة', icon: 'Database', description: 'إدارة وتصنيف الأسئلة المتراكمة.', stat: 'الأسئلة: 5,430', color: 'bg-sky-600/20 text-sky-400 border-sky-500/30' },
+  { id: 'archive_section', title: 'الأرشيف والبحث', icon: 'Archive', description: 'أرشفة الوثائق وإمكانية البحث السريع.', stat: 'مؤرشف: 12,453', color: 'bg-slate-600/20 text-slate-400 border-slate-500/30' },
+  { id: 'library_section', title: 'القوالب والتصاميم', icon: 'Library', description: 'قوالب جاهزة للطباعة والنشر.', stat: 'جديد: 5 قوالب', color: 'bg-teal-600/20 text-teal-400 border-teal-500/30' },
+  { id: 'settings', title: 'الإعدادات وإدارة النظام', icon: 'Settings', description: 'تخصيص النظام وصلاحيات الوصول.', stat: 'التحديثات: جاهز', color: 'bg-gray-600/20 text-gray-400 border-gray-500/30' }
 ];
 
 const iconMap: Record<string, any> = {
-  LayoutDashboard, FileText, FileSignature, UserCheck, GraduationCap, Users, CalendarDays, Database, Award, Archive, Library, Wrench, BrainCircuit, Printer, Settings, ScanLine
+  FileText, FileSignature, UserCheck, GraduationCap, Users, CalendarDays, Database, Award, Archive, Library, Settings
 };
 
 export default function Dashboard({ onSelect, onOpenBadges }: { onSelect: (id: string) => void, onOpenBadges: () => void }) {
-  const [time, setTime] = useState(new Date());
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const quickCreateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    function handleClickOutside(event: MouseEvent) {
+      if (quickCreateRef.current && !quickCreateRef.current.contains(event.target as Node)) {
+        setShowQuickCreate(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-200 font-sans select-none overflow-hidden flex flex-col relative">
-      {/* Dynamic Background Pattern */}
+    <div className="min-h-screen bg-gradient-to-br from-[#0B0914] via-[#101223] to-[#0A101D] text-slate-200 font-sans select-none overflow-hidden flex flex-col relative" dir="rtl">
+      {/* Dynamic Background Pattern & Glassmorphism elements */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
       </div>
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-[-200px] right-[-200px] w-[600px] h-[600px] bg-violet-900/10 rounded-full blur-[150px] pointer-events-none"></div>
+      <div className="absolute bottom-[-200px] left-[-200px] w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-[150px] pointer-events-none"></div>
 
-      {/* OS Header */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 backdrop-blur-md">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 border border-indigo-400/30">
-            <Command size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-              Mistar EduOS <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono border border-indigo-500/30">v4.0.0-beta</span>
-            </h1>
-            <p className="text-slate-400 text-xs font-medium tracking-wide">نظام التشغيل التعليمي الاستباقي</p>
+      {/* Top Header */}
+      <header className="relative z-30 flex items-center justify-between px-8 py-4 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl">
+        <div className="flex items-center gap-6 flex-1">
+          {/* Global Search */}
+          <div className="relative w-full max-w-md">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="ابحث في الطلاب، الوثائق، الامتحانات، والأرشيف..."
+              className="w-full bg-black/20 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-colors"
+            />
           </div>
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700/50 backdrop-blur-sm font-mono text-sm">
-            <span className="text-slate-400">{time.toLocaleDateString('ar-SA')}</span>
-            <span className="text-slate-600">|</span>
-            <span className="text-indigo-400 font-bold">{time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute:'2-digit' })}</span>
+          {/* Quick Create */}
+          <div className="relative" ref={quickCreateRef}>
+            <button 
+              onClick={() => setShowQuickCreate(!showQuickCreate)}
+              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-violet-900/20"
+            >
+              <Plus size={18} />
+              <span>إنشاء سريع</span>
+              <ChevronDown size={16} className={`transition-transform ${showQuickCreate ? 'rotate-180' : ''}`} />
+            </button>
+            
+            <AnimatePresence>
+              {showQuickCreate && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full left-0 mt-2 w-56 bg-[#13182b] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl"
+                >
+                  <div className="flex flex-col">
+                    <button onClick={() => onSelect('exams_section')} className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-right text-sm">
+                      <FileSignature size={16} className="text-violet-400" /> امتحان جديد
+                    </button>
+                    <button onClick={() => onSelect('certificates_section')} className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-right text-sm border-t border-white/5">
+                      <Award size={16} className="text-blue-400" /> شهادة جديدة
+                    </button>
+                    <button onClick={() => onSelect('grades_section')} className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-right text-sm border-t border-white/5">
+                      <GraduationCap size={16} className="text-cyan-400" /> كشف درجات
+                    </button>
+                    <button onClick={() => onSelect('document_editor')} className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-right text-sm border-t border-white/5">
+                      <FileText size={16} className="text-teal-400" /> مذكرة إدارية
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors relative">
-            <BellRing size={18} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+
+          <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 transition-colors relative">
+            <Bell size={18} />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
+          </button>
+          
+          <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 transition-colors">
+            <HelpCircle size={18} />
           </button>
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col md:flex-row relative z-10 h-[calc(100vh-73px)]">
-        {/* Proactive AI Panel */}
-        <aside className="w-full md:w-96 border-l border-slate-800/60 bg-slate-900/30 backdrop-blur-sm p-6 overflow-y-auto hidden md:flex flex-col gap-6 custom-scrollbar">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-300 flex items-center gap-2">
-              <BrainCircuit className="text-indigo-400" size={16} />
-              الذكاء الاستباقي
-            </h2>
-            <span className="text-[10px] uppercase font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">Active</span>
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto custom-scrollbar relative z-20 pb-16">
+        <div className="max-w-6xl mx-auto px-8 pt-12 pb-8">
+          
+          {/* Hero Section */}
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-l from-white to-slate-400 mb-4 tracking-tight">
+              الرَّقِيم | الجيل الجديد لإدارة الوثائق التعليمية
+            </h1>
+            <p className="text-slate-400 text-lg">
+              كل ما يحتاجه المعلم والإدارة المدرسية في منصة واحدة.
+            </p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <motion.div initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0}} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
-              <div className="absolute top-0 right-0 w-1 h-full bg-red-500"></div>
-              <div className="flex items-start gap-3 mb-2">
-                <AlertTriangle className="text-red-400 shrink-0 mt-0.5" size={18} />
-                <h3 className="font-bold text-white text-sm">مؤشر تسرب محتمل</h3>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed mb-3">
-                تغيب الطالب "سالم عبدالله" لليوم الثالث. لوحظ انخفاض في التفاعل بنسبة 40% الأسبوع الماضي.
-              </p>
-              <button className="text-xs bg-slate-700/50 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg w-full flex items-center justify-center gap-1 transition-colors">
-                فتح ملف الطالب <ChevronLeft size={14} />
-              </button>
-            </motion.div>
-
-            <motion.div initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0}} transition={{delay: 0.1}} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
-              <div className="absolute top-0 right-0 w-1 h-full bg-emerald-500"></div>
-              <div className="flex items-start gap-3 mb-2">
-                <Sparkles className="text-emerald-400 shrink-0 mt-0.5" size={18} />
-                <h3 className="font-bold text-white text-sm">اقتراح مسار علاجي</h3>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed mb-3">
-                30% من الطلاب أخطأوا في سؤال "قوانين نيوتن". تم توليد نشاط تفاعلي مخصص لسد الفجوة.
-              </p>
-              <button onClick={() => onSelect('exams_section')} className="text-xs bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/20 px-3 py-1.5 rounded-lg w-full flex items-center justify-center gap-1 transition-colors">
-                معاينة النشاط <ChevronLeft size={14} />
-              </button>
-            </motion.div>
-
-            <motion.div initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0}} transition={{delay: 0.2}} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
-              <div className="absolute top-0 right-0 w-1 h-full bg-blue-500"></div>
-              <div className="flex items-start gap-3 mb-2">
-                <Cpu className="text-blue-400 shrink-0 mt-0.5" size={18} />
-                <h3 className="font-bold text-white text-sm">أتمتة السجلات</h3>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed mb-3">
-                تم الانتهاء من تصحيح 45 ورقة إجابة عبر OMR ورصدها تلقائياً في سجل الدرجات.
-              </p>
-              <button onClick={() => onSelect('grades_section')} className="text-xs bg-slate-700/50 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg w-full flex items-center justify-center gap-1 transition-colors">
-                عرض سجل الدرجات <ChevronLeft size={14} />
-              </button>
-            </motion.div>
-          </div>
-        </aside>
-
-        {/* Core Apps Grid */}
-        <main className="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-              <div className="w-1 h-6 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.8)]" />
-              تطبيقات النظام (Zero-Paper Workspace)
-            </h2>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {sections.map((section, index) => {
-                const Icon = iconMap[section.icon];
-                const isAI = ['ai_section', 'exams_section', 'smart_correction'].includes(section.id);
-                
-                return (
-                  <motion.button
-                    key={section.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    onClick={() => onSelect(section.id)}
-                    className="group relative bg-slate-800/40 hover:bg-slate-800 p-5 rounded-3xl border border-slate-700/50 hover:border-indigo-500/50 transition-all text-center flex flex-col items-center gap-4 cursor-pointer overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    
-                    {isAI && (
-                      <div className="absolute top-3 right-3 text-indigo-400 animate-pulse">
-                        <Sparkles size={14} />
-                      </div>
-                    )}
-                    
-                    <div className={`p-4 rounded-2xl ${section.color} text-white shadow-lg group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-300 relative z-10`}>
-                      <Icon size={26} strokeWidth={1.5} />
-                    </div>
-                    
-                    <div className="relative z-10">
-                      <h3 className="font-bold text-slate-200 text-sm mb-1">{section.title}</h3>
-                      <p className="text-slate-500 text-[11px] leading-relaxed">
-                        {section.description}
-                      </p>
-                    </div>
-                  </motion.button>
-                );
-              })}
+          {/* Info Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mb-12 text-xs md:text-sm font-medium">
+            <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300">مدرسة اليرموك النموذجية</div>
+            <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300">العام الدراسي 2026/2027</div>
+            <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300">الفصل الأول</div>
+            <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-300">أ.م</div>
+              أحمد محمد
+            </div>
+            <div className="px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center gap-2">
+              <Wifi size={14} /> متصل محلياً
+            </div>
+            <div className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-2">
+              <CheckCircle2 size={14} /> الحفظ التلقائي مفعل
             </div>
           </div>
-        </main>
-      </div>
+
+          {/* 3x3 Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sections.map((section, index) => {
+              const Icon = iconMap[section.icon];
+              
+              return (
+                <motion.button
+                  key={section.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => onSelect(section.id)}
+                  className="group relative flex flex-col items-start p-6 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 hover:border-white/10 transition-all text-right cursor-pointer overflow-hidden backdrop-blur-md shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                  
+                  <div className={`p-4 rounded-xl mb-6 transition-transform duration-300 group-hover:scale-110 ${section.color} border`}>
+                    <Icon size={28} strokeWidth={1.5} />
+                  </div>
+                  
+                  <h3 className="text-lg font-bold text-slate-100 mb-2">{section.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6 flex-1">
+                    {section.description}
+                  </p>
+                  
+                  <div className="w-full flex items-center justify-between pt-4 border-t border-white/5 text-xs text-slate-500 font-mono">
+                    <span>{section.stat}</span>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+
+        </div>
+      </main>
+
+      {/* Bottom Bar */}
+      <footer className="relative z-30 flex items-center justify-between px-6 py-3 border-t border-white/5 bg-[#080b14]/80 backdrop-blur-md text-[11px] text-slate-500 font-mono">
+        <div className="flex items-center gap-4">
+          <span className="text-slate-400 font-bold">Raqeem OS 1.0</span>
+          <span className="flex items-center gap-1.5"><DatabaseIcon size={12} className="text-teal-500" /> SQLite Ready</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1.5"><Archive size={12} /> 12,453 Document Archived</span>
+          <span className="flex items-center gap-1.5"><HardDrive size={12} /> Storage 12.4 GB</span>
+        </div>
+      </footer>
     </div>
   );
 }

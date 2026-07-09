@@ -47,7 +47,7 @@ export default function Archive({ onBack }: { onBack: () => void }) {
               placeholder="ابحث عن ملف..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-4 py-3 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all font-medium"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -55,7 +55,7 @@ export default function Archive({ onBack }: { onBack: () => void }) {
               <button
                 key={type}
                 onClick={() => setSelectedType(type)}
-                className={`px-4 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${selectedType === type ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                className={`px-4 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${selectedType === type ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
                 {type}
               </button>
@@ -72,7 +72,7 @@ export default function Archive({ onBack }: { onBack: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col gap-4 hover:shadow-xl transition-all group"
             >
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center">
                 <FileText size={24} />
               </div>
               <div>

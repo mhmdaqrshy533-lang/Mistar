@@ -62,7 +62,7 @@ export default function FinalResults({ onBack }: { onBack: () => void }) {
     <div className="min-h-screen bg-purple-50/30 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white p-6 shadow-xl relative overflow-hidden rounded-[2rem] mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-gradient-to-r from-purple-900 via-violet-900 to-purple-900 text-white p-6 shadow-xl relative overflow-hidden rounded-[2rem] mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
               <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -101,9 +101,9 @@ export default function FinalResults({ onBack }: { onBack: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'عدد الطلاب', value: students.length, color: 'border-purple-500' },
-            { label: 'العام الدراسي', value: '2026-2027', color: 'border-indigo-500' },
+            { label: 'العام الدراسي', value: '2026-2027', color: 'border-violet-500' },
             { label: 'الصف', value: 'السابع', color: 'border-purple-400' },
-            { label: 'النظام', value: 'عدن', color: 'border-indigo-400' },
+            { label: 'النظام', value: 'عدن', color: 'border-violet-400' },
           ].map((stat, i) => (
             <div key={i} className={`bg-white p-4 rounded-3xl border-r-4 shadow-sm hover:shadow-md transition-all ${stat.color}`}>
               <p className="text-purple-400 text-xs font-bold mb-1">{stat.label}</p>
@@ -198,7 +198,7 @@ export default function FinalResults({ onBack }: { onBack: () => void }) {
               <div className="space-y-3">
                 {[
                   { label: 'شهادات تقدير', icon: 'Award', color: 'text-purple-600 bg-purple-50' },
-                  { label: 'استيراد من Excel', icon: 'Upload', color: 'text-indigo-600 bg-indigo-50' },
+                  { label: 'استيراد من Excel', icon: 'Upload', color: 'text-violet-600 bg-violet-50' },
                   { label: 'إعدادات المقررات', icon: 'Settings', color: 'text-fuchsia-600 bg-fuchsia-50' },
                   { label: 'معلومات المدرسة', icon: 'School', color: 'text-violet-600 bg-violet-50' },
                 ].map((item, i) => (
@@ -212,7 +212,7 @@ export default function FinalResults({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
+            <div className="bg-gradient-to-br from-purple-900 via-violet-900 to-purple-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
               <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
               <h4 className="text-xl font-black mb-2">إصدار الشهادات</h4>
               <p className="text-purple-200 text-xs mb-6 leading-relaxed">

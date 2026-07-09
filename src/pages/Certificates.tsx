@@ -130,7 +130,7 @@ export default function Certificates({ onBack }: { onBack: () => void }) {
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                  <Edit3 size={20} className="text-indigo-500" /> تعديل النص
+                  <Edit3 size={20} className="text-violet-500" /> تعديل النص
                 </h3>
                 <button onClick={() => setEditingField(null)} className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full">
                   <X size={20} />
@@ -140,10 +140,10 @@ export default function Certificates({ onBack }: { onBack: () => void }) {
                 defaultValue={(certData as any)[editingField]}
                 onBlur={(e) => handleSave(e.target.value)}
                 onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave((e.target as any).value); } }}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-800 focus:outline-none focus:border-indigo-500 min-h-[100px]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-800 focus:outline-none focus:border-violet-500 min-h-[100px]"
                 autoFocus
               />
-              <button onClick={() => setEditingField(null)} className="w-full mt-4 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">
+              <button onClick={() => setEditingField(null)} className="w-full mt-4 bg-violet-600 text-white font-bold py-3 rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-600/20">
                 حفظ
               </button>
             </motion.div>
@@ -163,7 +163,7 @@ export default function Certificates({ onBack }: { onBack: () => void }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-md">
+          <button onClick={() => window.print()} className="flex items-center gap-2 bg-violet-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-violet-700 transition-colors shadow-md">
             <Printer size={18} /> طباعة الشهادة
           </button>
         </div>
@@ -182,7 +182,7 @@ export default function Certificates({ onBack }: { onBack: () => void }) {
                   key={theme.id}
                   onClick={() => setSelectedTheme(theme.id)}
                   className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
-                    selectedTheme === theme.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 bg-white'
+                    selectedTheme === theme.id ? 'border-violet-500 bg-violet-50' : 'border-slate-100 bg-white'
                   }`}
                 >
                   <span className="font-medium text-slate-700">{theme.name}</span>

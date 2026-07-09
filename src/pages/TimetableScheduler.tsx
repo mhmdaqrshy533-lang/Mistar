@@ -59,7 +59,7 @@ export default function TimetableScheduler({ onBack }: { onBack: () => void }) {
             </button>
             <div>
               <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                <LayoutDashboard className="text-indigo-600" size={24} />
+                <LayoutDashboard className="text-violet-600" size={24} />
                 محرك الجدولة (Constraint Solver)
               </h1>
               <p className="text-slate-500 font-medium text-sm mt-1">
@@ -72,7 +72,7 @@ export default function TimetableScheduler({ onBack }: { onBack: () => void }) {
             <button 
               onClick={runAlgorithm}
               disabled={isProcessing}
-              className="px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold flex items-center gap-2 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-violet-50 text-violet-700 border border-violet-200 rounded-lg font-bold flex items-center gap-2 hover:bg-violet-100 disabled:opacity-50 transition-colors"
             >
               <RefreshCw size={18} className={isProcessing ? 'animate-spin' : ''} />
               إعادة بناء الجدول
@@ -113,7 +113,7 @@ export default function TimetableScheduler({ onBack }: { onBack: () => void }) {
                             <td key={p} className="p-2 border border-slate-200 text-sm">
                               {slot ? (
                                 <div>
-                                  <div className="font-bold text-indigo-700">{slot.subject}</div>
+                                  <div className="font-bold text-violet-700">{slot.subject}</div>
                                   <div className="text-xs text-slate-500">{slot.teacher}</div>
                                 </div>
                               ) : (

@@ -114,12 +114,12 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
             <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
               <ArrowRight className="text-slate-600" />
             </button>
-            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center">
               <Database size={24} />
             </div>
             <h1 className="text-2xl font-black text-slate-800">بنك الأسئلة الموحد</h1>
           </div>
-          <div className="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl border border-indigo-100">
+          <div className="flex items-center gap-2 bg-violet-50 text-violet-700 px-4 py-2 rounded-xl border border-violet-100">
             <ShieldCheck size={18} />
             <span className="font-bold text-sm">أداة مسطار الذكية - برمجة وتطوير م. سهيل الهزبري</span>
           </div>
@@ -134,21 +134,21 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
             <div className="flex border-b border-slate-200 text-sm font-bold">
               <button 
                 onClick={() => setActiveTab('text')}
-                className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${activeTab === 'text' ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${activeTab === 'text' ? 'bg-violet-50 text-violet-700 border-b-2 border-violet-600' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <BookOpen size={20} />
                 نص الدرس
               </button>
               <button 
                 onClick={() => setActiveTab('image')}
-                className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${activeTab === 'image' ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${activeTab === 'image' ? 'bg-violet-50 text-violet-700 border-b-2 border-violet-600' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <ImageIcon size={20} />
                 صورة ملزمة
               </button>
               <button 
                 onClick={() => setActiveTab('manual')}
-                className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${activeTab === 'manual' ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${activeTab === 'manual' ? 'bg-violet-50 text-violet-700 border-b-2 border-violet-600' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <PenTool size={20} />
                 إدخال يدوي
@@ -166,7 +166,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     rows={8}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:outline-none focus:border-indigo-500 transition-all resize-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:outline-none focus:border-violet-500 transition-all resize-none"
                     placeholder="قم بنسخ ولصق الفقرات من الكتاب هنا..."
                   />
                   <div className="flex gap-2">
@@ -176,7 +176,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                   <button 
                     onClick={generateFromText}
                     disabled={isLoading || !textInput.trim()}
-                    className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full bg-violet-600 text-white font-bold py-3 rounded-xl hover:bg-violet-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Database size={18} />}
                     {isLoading ? 'جاري التحليل والاستخراج...' : 'تحليل النص واستخراج الأسئلة'}
@@ -188,7 +188,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                   <label className="block font-bold text-slate-700">تحليل صور الدروس (OCR)</label>
                   <p className="text-xs text-slate-500 mb-2">قم باختيار أو تصوير صفحة ليتم استخراج النص وتوليد الأسئلة منها.</p>
-                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 flex flex-col items-center justify-center bg-slate-50 relative group hover:bg-indigo-50 hover:border-indigo-300 transition-colors">
+                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 flex flex-col items-center justify-center bg-slate-50 relative group hover:bg-violet-50 hover:border-violet-300 transition-colors">
                     <input 
                       type="file" 
                       accept="image/*"
@@ -200,12 +200,12 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
-                    <ImageIcon size={40} className="text-slate-400 group-hover:text-indigo-500 mb-3" />
+                    <ImageIcon size={40} className="text-slate-400 group-hover:text-violet-500 mb-3" />
                     <p className="font-bold text-slate-600 text-sm">اسحب الصورة هنا أو اضغط للاختيار أو التصوير</p>
                     <p className="text-xs text-slate-400 mt-1">يدعم استخراج النص العربي والإنجليزي</p>
                     {imageFile && (
-                      <div className="absolute inset-0 bg-white/90 rounded-2xl flex flex-col items-center justify-center p-4 border border-indigo-200">
-                        <span className="font-bold text-sm text-indigo-700 truncate w-full text-center">{imageFile.name}</span>
+                      <div className="absolute inset-0 bg-white/90 rounded-2xl flex flex-col items-center justify-center p-4 border border-violet-200">
+                        <span className="font-bold text-sm text-violet-700 truncate w-full text-center">{imageFile.name}</span>
                         <span className="text-xs text-slate-500 mt-1">جاهز للتحليل</span>
                       </div>
                     )}
@@ -213,7 +213,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                   <button 
                     onClick={generateFromImage}
                     disabled={isLoading || !imageFile}
-                    className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full bg-violet-600 text-white font-bold py-3 rounded-xl hover:bg-violet-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Scan size={18} />}
                     {isLoading ? 'جاري تحليل الصورة والتعرف على النص (OCR)...' : 'استخراج النص وتوليد الأسئلة'}
@@ -228,7 +228,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                     <select 
                       value={manualQType} 
                       onChange={(e) => setManualQType(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 transition-all font-bold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-violet-500 transition-all font-bold"
                     >
                       <option value="direct">سؤال مباشر</option>
                       <option value="tf">صح وخطأ</option>
@@ -246,7 +246,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                       value={manualQText}
                       onChange={(e) => setManualQText(e.target.value)}
                       rows={3}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 transition-all resize-none font-bold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-violet-500 transition-all resize-none font-bold"
                     />
                   </div>
 
@@ -264,7 +264,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                               newOpts[idx] = e.target.value;
                               setManualOptions(newOpts);
                             }}
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500 transition-all"
+                            className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-violet-500 transition-all"
                           />
                         </div>
                       ))}
@@ -274,7 +274,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                   <div className="grid grid-cols-2 gap-3 pt-4 mt-2 border-t border-slate-100">
                      <div>
                         <label className="block text-[11px] font-bold text-slate-500 mb-1">المادة</label>
-                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-indigo-500">
+                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-violet-500">
                            <option>الفيزياء</option>
                            <option>الكيمياء</option>
                            <option>الرياضيات</option>
@@ -284,7 +284,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                      </div>
                      <div>
                         <label className="block text-[11px] font-bold text-slate-500 mb-1">الصف</label>
-                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-indigo-500">
+                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-violet-500">
                            <option>الثالث الثانوي</option>
                            <option>الثاني الثانوي</option>
                            <option>الأول الثانوي</option>
@@ -292,11 +292,11 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                      </div>
                      <div>
                         <label className="block text-[11px] font-bold text-slate-500 mb-1">الفصل (الباب)</label>
-                        <input type="text" placeholder="مثال: الفصل الأول" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-indigo-500" />
+                        <input type="text" placeholder="مثال: الفصل الأول" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-violet-500" />
                      </div>
                      <div>
                         <label className="block text-[11px] font-bold text-slate-500 mb-1">مستوى بلوم</label>
-                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-indigo-500">
+                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-violet-500">
                            <option>تذكر</option>
                            <option>فهم</option>
                            <option>تطبيق</option>
@@ -307,7 +307,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                      </div>
                      <div>
                         <label className="block text-[11px] font-bold text-slate-500 mb-1">الصعوبة</label>
-                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-indigo-500">
+                        <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-violet-500">
                            <option>سهل</option>
                            <option>متوسط</option>
                            <option>صعب</option>
@@ -316,7 +316,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                      </div>
                      <div>
                         <label className="block text-[11px] font-bold text-slate-500 mb-1">الدرجة</label>
-                        <input type="number" defaultValue="1" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-indigo-500" />
+                        <input type="number" defaultValue="1" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-violet-500" />
                      </div>
                   </div>
 
@@ -339,7 +339,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-h-[600px] flex flex-col">
             <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
               <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                <Database className="text-indigo-600" />
+                <Database className="text-violet-600" />
                 مكتبة الأسئلة ({filteredQuestions.length})
               </h2>
               <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
@@ -353,12 +353,12 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                 placeholder="بحث في الأسئلة..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-violet-500"
               />
               <select 
                 value={filterSubject}
                 onChange={(e) => setFilterSubject(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
+                className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-violet-500"
               >
                 <option value="all">كل المواد</option>
                 <option value="الفيزياء">الفيزياء</option>
@@ -384,7 +384,7 @@ export default function QuestionBank({ onBack }: { onBack: () => void }) {
                       <Trash2 size={18} />
                     </button>
                     <div className="flex gap-2 mb-2 flex-wrap">
-                      <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">
+                      <span className="text-xs font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded">
                         {q.type === 'tf' ? 'صح وخطأ' : q.type === 'mcq' ? 'اختيارات' : 'سؤال'}
                       </span>
                       <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">

@@ -97,10 +97,10 @@ export default function AnalyticalDashboard({ onBack }: { onBack: () => void }) 
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden h-full">
               <div className="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                 <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                  <LineChart size={18} className="text-indigo-600" />
+                  <LineChart size={18} className="text-violet-600" />
                   السجل الأكاديمي والتحليل
                 </h2>
-                {isAnalyzing && <span className="text-sm font-bold text-indigo-600 animate-pulse">جاري المعالجة...</span>}
+                {isAnalyzing && <span className="text-sm font-bold text-violet-600 animate-pulse">جاري المعالجة...</span>}
               </div>
               
               <div className="overflow-x-auto">
@@ -118,7 +118,7 @@ export default function AnalyticalDashboard({ onBack }: { onBack: () => void }) 
                     {analyzedData.map((student, idx) => (
                       <tr 
                         key={student.id} 
-                        className={`border-b border-slate-100 transition-colors cursor-pointer ${selectedStudent?.id === student.id ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
+                        className={`border-b border-slate-100 transition-colors cursor-pointer ${selectedStudent?.id === student.id ? 'bg-violet-50/50' : 'hover:bg-slate-50'}`}
                         onClick={() => generateAIReport(student)}
                       >
                         <td className="p-4 font-black text-slate-400">{idx + 1}</td>
@@ -136,7 +136,7 @@ export default function AnalyticalDashboard({ onBack }: { onBack: () => void }) 
                         </td>
                         <td className="p-4">
                           <button 
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${selectedStudent?.id === student.id ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${selectedStudent?.id === student.id ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                           >
                             <Bot size={14} />
                             تحليل AI

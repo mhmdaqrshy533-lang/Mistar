@@ -8,7 +8,7 @@ import Dashboard from './components/Dashboard';
 import FinalResults from './pages/FinalResults';
 import DailyPlan from './pages/DailyPlan';
 import Attendance from './pages/Attendance';
-import AITeacherWorkspace from './pages/AITeacherWorkspace';
+import ExamStudio from './pages/ExamStudio';
 import AnalyticalDashboard from './pages/AnalyticalDashboard';
 import TimetableScheduler from './pages/TimetableScheduler';
 import BubbleSheetProcessor from './pages/BubbleSheetProcessor';
@@ -45,7 +45,7 @@ export default function App() {
       case 'document_editor':
         return <OfficialMemos onBack={() => setActivePage('dashboard')} />;
       case 'exams_section':
-        return <AITeacherWorkspace onBack={() => setActivePage('dashboard')} />;
+        return <ExamStudio onBack={() => setActivePage('dashboard')} />;
       case 'attendance_section':
         return <Attendance onBack={() => setActivePage('dashboard')} />;
       case 'grades_section':

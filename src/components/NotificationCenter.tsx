@@ -17,7 +17,7 @@ export default function NotificationCenter() {
       case 'alert': return <AlertTriangle className="text-red-400" size={20} />;
       case 'suggestion': return <Sparkles className="text-emerald-400" size={20} />;
       case 'automation': return <Cpu className="text-blue-400" size={20} />;
-      default: return <Info className="text-indigo-400" size={20} />;
+      default: return <Info className="text-violet-400" size={20} />;
     }
   };
 
@@ -26,7 +26,7 @@ export default function NotificationCenter() {
       case 'alert': return 'border-red-500/50';
       case 'suggestion': return 'border-emerald-500/50';
       case 'automation': return 'border-blue-500/50';
-      default: return 'border-indigo-500/50';
+      default: return 'border-violet-500/50';
     }
   };
 
@@ -63,7 +63,7 @@ export default function NotificationCenter() {
                       launchApplet(notif.actionRoute!);
                       markAsRead(notif.id);
                     }}
-                    className="text-xs font-bold text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg border border-indigo-500/20 transition-colors"
+                    className="text-xs font-bold text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 px-3 py-1.5 rounded-lg border border-violet-500/20 transition-colors"
                   >
                     {notif.actionLabel}
                   </button>

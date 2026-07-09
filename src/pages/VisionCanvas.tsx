@@ -110,7 +110,7 @@ export default function VisionCanvas({ onBack }: { onBack: () => void }) {
   return (
     <div className="min-h-screen bg-purple-50/30 p-6 select-none font-sans">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white p-6 shadow-xl relative overflow-hidden rounded-[2rem] mb-6 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-purple-900 via-violet-900 to-purple-900 text-white p-6 shadow-xl relative overflow-hidden rounded-[2rem] mb-6 flex items-center justify-between">
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
               <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -155,7 +155,7 @@ export default function VisionCanvas({ onBack }: { onBack: () => void }) {
             </div>
             <button 
               onClick={generateOfficialPDF}
-              className="px-6 py-3 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold flex items-center gap-2 hover:bg-indigo-100 transition-colors"
+              className="px-6 py-3 rounded-xl bg-violet-50 text-violet-700 border border-violet-200 font-bold flex items-center gap-2 hover:bg-violet-100 transition-colors"
             >
               <Printer size={20} />
               إصدار كمستند رسمي

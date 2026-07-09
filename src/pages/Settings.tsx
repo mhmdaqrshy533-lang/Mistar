@@ -20,7 +20,7 @@ export default function Settings({ onBack }: { onBack: () => void }) {
             </div>
             <h1 className="text-2xl font-black text-slate-800 font-serif">الإعدادات</h1>
           </div>
-          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors">
+          <button className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors">
             <Save size={18} />
             حفظ التغييرات
           </button>
@@ -80,7 +80,7 @@ export default function Settings({ onBack }: { onBack: () => void }) {
                   <span className="block font-bold text-slate-800">الإشعارات الصوتية</span>
                   <span className="text-sm text-slate-500">تشغيل تنبيه صوتي عند اكتمال العمليات</span>
                 </div>
-                <div className="relative inline-block w-12 h-6 rounded-full bg-indigo-500">
+                <div className="relative inline-block w-12 h-6 rounded-full bg-violet-500">
                   <div className="absolute right-1 top-1 w-4 h-4 rounded-full bg-white transition-transform transform translate-x-[-24px]"></div>
                 </div>
               </label>

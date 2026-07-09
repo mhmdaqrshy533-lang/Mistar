@@ -104,8 +104,8 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
         <div className="lg:col-span-5 space-y-6">
           
           {/* Power Search */}
-          <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 relative overflow-hidden transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 relative overflow-hidden transition-all focus-within:border-violet-500 focus-within:ring-4 focus-within:ring-violet-500/10">
+            <div className="p-3 bg-violet-50 text-violet-600 rounded-xl">
               <Search size={20} />
             </div>
             <input 
@@ -128,7 +128,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
               >
                 {/* Context Card */}
                 <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-[80px] opacity-30" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500 rounded-full blur-[80px] opacity-30" />
                   
                   <h2 className="text-2xl font-black mb-1">{activeStudent.name}</h2>
                   <p className="text-slate-400 text-sm font-medium mb-6">رقم أكاديمي: {searchId} | المعدل السابق: {activeStudent.pastAverage}%</p>
@@ -148,7 +148,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                         type="number" 
                         value={grades.participation}
                         onChange={(e) => setGrades({...grades, participation: e.target.value})}
-                        className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-center font-bold text-xl focus:outline-none focus:border-indigo-400 focus:bg-white/20 transition-all"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-center font-bold text-xl focus:outline-none focus:border-violet-400 focus:bg-white/20 transition-all"
                       />
                     </div>
                     <div className="space-y-1">
@@ -157,7 +157,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                         type="number" 
                         value={grades.homework}
                         onChange={(e) => setGrades({...grades, homework: e.target.value})}
-                        className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-center font-bold text-xl focus:outline-none focus:border-indigo-400 focus:bg-white/20 transition-all"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-center font-bold text-xl focus:outline-none focus:border-violet-400 focus:bg-white/20 transition-all"
                       />
                     </div>
                     <div className="space-y-1">
@@ -166,7 +166,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                         type="number" 
                         value={grades.exam}
                         onChange={(e) => setGrades({...grades, exam: e.target.value})}
-                        className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-center font-bold text-xl focus:outline-none focus:border-indigo-400 focus:bg-white/20 transition-all"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-center font-bold text-xl focus:outline-none focus:border-violet-400 focus:bg-white/20 transition-all"
                       />
                     </div>
                   </div>
@@ -182,7 +182,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                       className={`w-full border rounded-xl p-4 text-center font-black text-2xl focus:outline-none transition-all ${
                         aiAnalysis?.status === 'error' ? 'bg-red-500/20 border-red-500 text-white focus:border-red-400' :
                         aiAnalysis?.status === 'ok' ? 'bg-green-500/20 border-green-500 text-white focus:border-green-400' :
-                        'bg-white/10 border-white/20 text-white focus:border-indigo-400 focus:bg-white/20'
+                        'bg-white/10 border-white/20 text-white focus:border-violet-400 focus:bg-white/20'
                       }`}
                     />
                   </div>
@@ -237,7 +237,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
         {/* Live Document Preview */}
         <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 overflow-hidden relative">
           <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-            <FileText className="text-indigo-600" size={24} />
+            <FileText className="text-violet-600" size={24} />
             <h3 className="font-bold text-slate-800 text-lg">الوثيقة الحية (تُحدَّث تلقائياً)</h3>
           </div>
 
@@ -252,12 +252,12 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                 className="w-[90%] h-[90%] bg-white border border-slate-300 shadow-lg p-8 relative flex flex-col"
               >
                 {/* Official Header */}
-                <div className="border-b-2 border-indigo-900 pb-4 mb-6 flex justify-between items-start">
+                <div className="border-b-2 border-violet-900 pb-4 mb-6 flex justify-between items-start">
                   <div className="text-right">
-                    <h1 className="font-black text-indigo-900 text-xl mb-1">مدرسة مِسْطار النموذجية</h1>
+                    <h1 className="font-black text-violet-900 text-xl mb-1">مدرسة مِسْطار النموذجية</h1>
                     <p className="text-xs text-slate-500 font-bold">كشف درجات معتمد خوارزمياً</p>
                   </div>
-                  <div className="w-16 h-16 border-2 border-indigo-900 rounded-lg flex items-center justify-center opacity-20 rotate-12">
+                  <div className="w-16 h-16 border-2 border-violet-900 rounded-lg flex items-center justify-center opacity-20 rotate-12">
                     <span className="font-black text-xs">MISTAR</span>
                   </div>
                 </div>
@@ -271,11 +271,11 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
 
                   <table className="w-full text-center border-collapse">
                     <thead>
-                      <tr className="bg-indigo-900 text-white text-sm">
-                        <th className="p-3 border border-indigo-900">المشاركة</th>
-                        <th className="p-3 border border-indigo-900">الواجبات</th>
-                        <th className="p-3 border border-indigo-900">الاختبار</th>
-                        <th className="p-3 border border-indigo-900 bg-indigo-800">المجموع</th>
+                      <tr className="bg-violet-900 text-white text-sm">
+                        <th className="p-3 border border-violet-900">المشاركة</th>
+                        <th className="p-3 border border-violet-900">الواجبات</th>
+                        <th className="p-3 border border-violet-900">الاختبار</th>
+                        <th className="p-3 border border-violet-900 bg-violet-800">المجموع</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -283,7 +283,7 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                         <td className="p-4 border border-slate-300 font-bold text-lg">{grades.participation || '-'}</td>
                         <td className="p-4 border border-slate-300 font-bold text-lg">{grades.homework || '-'}</td>
                         <td className="p-4 border border-slate-300 font-bold text-lg">{grades.exam || '-'}</td>
-                        <td className="p-4 border border-slate-300 font-black text-xl text-indigo-700 bg-indigo-50">
+                        <td className="p-4 border border-slate-300 font-black text-xl text-violet-700 bg-violet-50">
                           {(parseFloat(grades.participation) || 0) + (parseFloat(grades.homework) || 0) + (parseFloat(grades.exam) || 0) || '-'}
                         </td>
                       </tr>
@@ -300,8 +300,8 @@ export default function SmartGrading({ onBack }: { onBack: () => void }) {
                   <p>وثيقة حية - تحديث تلقائي</p>
                   <div className="text-center">
                     <p className="mb-2">ختم النظام</p>
-                    <div className="w-12 h-12 rounded-full border border-indigo-900 mx-auto flex items-center justify-center opacity-50">
-                      <CheckCircle2 size={16} className="text-indigo-900" />
+                    <div className="w-12 h-12 rounded-full border border-violet-900 mx-auto flex items-center justify-center opacity-50">
+                      <CheckCircle2 size={16} className="text-violet-900" />
                     </div>
                   </div>
                 </div>

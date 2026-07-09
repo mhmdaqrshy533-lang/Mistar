@@ -220,14 +220,14 @@ export default function BubbleSheets({ onBack }: { onBack: () => void }) {
             <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
               <ArrowRight className="text-slate-600" />
             </button>
-            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center">
               <FileText size={24} />
             </div>
             <h1 className="text-2xl font-black text-slate-800 font-serif">نماذج بابل شيت (Bubble Sheets)</h1>
           </div>
           <button 
             onClick={() => window.print()}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors"
+            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors"
           >
             <Printer size={18} />
             طباعة الورقة (A4)
@@ -239,13 +239,13 @@ export default function BubbleSheets({ onBack }: { onBack: () => void }) {
       <div className="max-w-7xl mx-auto px-6 mt-8 print:hidden flex gap-4 mb-8">
         <button 
           onClick={() => setActiveTemplate('yemen_hs')}
-          className={`flex-1 p-4 rounded-2xl border-2 font-bold transition-all ${activeTemplate === 'yemen_hs' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300'}`}
+          className={`flex-1 p-4 rounded-2xl border-2 font-bold transition-all ${activeTemplate === 'yemen_hs' ? 'border-violet-600 bg-violet-50 text-violet-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}
         >
           نموذج (1) - مزدوج (صح/خطأ واختيارات)
         </button>
         <button 
           onClick={() => setActiveTemplate('egypt_hs')}
-          className={`flex-1 p-4 rounded-2xl border-2 font-bold transition-all ${activeTemplate === 'egypt_hs' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300'}`}
+          className={`flex-1 p-4 rounded-2xl border-2 font-bold transition-all ${activeTemplate === 'egypt_hs' ? 'border-violet-600 bg-violet-50 text-violet-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}
         >
           نموذج (2) - 60 سؤال (رقم جلوس)
         </button>

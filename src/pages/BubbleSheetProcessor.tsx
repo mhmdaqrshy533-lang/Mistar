@@ -40,7 +40,7 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
             </button>
             <div>
               <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                <ScanLine className="text-indigo-600" size={24} />
+                <ScanLine className="text-violet-600" size={24} />
                 التصحيح الذكي (Smart Correction)
               </h1>
               <p className="text-slate-500 font-medium text-sm mt-1">
@@ -67,13 +67,13 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
             {!isProcessing && !results && (
               <div className="text-center z-10">
                 <div className="w-20 h-20 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <ScanLine size={40} className="text-indigo-400" />
+                  <ScanLine size={40} className="text-violet-400" />
                 </div>
                 <h3 className="text-white font-bold text-xl mb-2">النظام جاهز للاستقبال</h3>
                 <p className="text-slate-400 mb-8">يرجى توجيه الكاميرا نحو ورقة (Bubble Sheet)</p>
                 <button 
                   onClick={startProcessing}
-                  className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 mx-auto hover:bg-indigo-700 transition-colors"
+                  className="bg-violet-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 mx-auto hover:bg-violet-700 transition-colors"
                 >
                   <Play size={20} />
                   بدء المعالجة الخوارزمية
@@ -83,7 +83,7 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
 
             {isProcessing && (
               <div className="z-10 w-full max-w-md">
-                <div className="relative h-64 border-2 border-indigo-500/50 rounded-xl overflow-hidden mb-6 bg-slate-800">
+                <div className="relative h-64 border-2 border-violet-500/50 rounded-xl overflow-hidden mb-6 bg-slate-800">
                   <motion.div
                     animate={{ y: [0, 256, 0] }}
                     transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
@@ -92,13 +92,13 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
                   <img src="https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=2070&auto=format&fit=crop" alt="Sheet" className="w-full h-full object-cover opacity-30 mix-blend-luminosity" />
                 </div>
                 <div className="text-center">
-                  <p className="text-indigo-400 font-mono text-sm mb-2 animate-pulse">Running Matrix Extraction [O(n^2)]...</p>
+                  <p className="text-violet-400 font-mono text-sm mb-2 animate-pulse">Running Matrix Extraction [O(n^2)]...</p>
                   <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: "100%" }}
                       transition={{ duration: 2.5 }}
-                      className="h-full bg-indigo-500"
+                      className="h-full bg-violet-500"
                     />
                   </div>
                 </div>
@@ -163,12 +163,12 @@ export default function BubbleSheetProcessor({ onBack }: { onBack: () => void })
                     </div>
                     <div className="flex justify-between items-center py-2">
                       <span className="text-slate-500 text-sm">الدرجة النهائية</span>
-                      <span className="font-black text-2xl text-indigo-700">{results.score}%</span>
+                      <span className="font-black text-2xl text-violet-700">{results.score}%</span>
                     </div>
                   </div>
 
                   <div className="flex gap-2 mb-4 w-full">
-                    <button className="flex-1 py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl hover:bg-indigo-100 transition-colors border border-indigo-100 text-sm">
+                    <button className="flex-1 py-3 bg-violet-50 text-violet-700 font-bold rounded-xl hover:bg-violet-100 transition-colors border border-violet-100 text-sm">
                       حفظ السجل
                     </button>
                     <button className="flex-1 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl hover:bg-emerald-100 transition-colors border border-emerald-100 text-sm">

@@ -54,7 +54,7 @@ export default function MistarEduOS({ onBack }: { onBack: () => void }) {
       id: 'national',
       title: 'الذكاء الوطني',
       icon: <Network size={24} />,
-      color: 'bg-indigo-600',
+      color: 'bg-violet-600',
       description: 'العقل الرابط: تحليل تنبؤي، تحسين مستمر للمناهج والسياسات بناء على البيانات الضخمة.',
       features: ['نماذج تعلم آلي وطنية', 'اكتشاف المشكلات الاستباقي', 'تحليل البيانات الضخمة', 'توجيه اقتصاد المعرفة']
     }
@@ -71,7 +71,7 @@ export default function MistarEduOS({ onBack }: { onBack: () => void }) {
         </button>
         <div>
           <h1 className="text-xl font-black text-white flex items-center gap-2">
-            Mistar EduOS <span className="text-indigo-400 text-sm font-bold bg-indigo-900/50 px-2 py-0.5 rounded">الرؤية الوطنية 2040</span>
+            Mistar EduOS <span className="text-violet-400 text-sm font-bold bg-violet-900/50 px-2 py-0.5 rounded">الرؤية الوطنية 2040</span>
           </h1>
           <p className="text-slate-400 text-xs mt-1">نظام التشغيل التعليمي الوطني - إعادة اختراع التعليم من الصفر</p>
         </div>
@@ -82,14 +82,14 @@ export default function MistarEduOS({ onBack }: { onBack: () => void }) {
         <div className="w-full lg:w-80 border-l border-slate-800 bg-slate-900/80 backdrop-blur-md flex flex-col overflow-y-auto">
           <div className="p-6">
             <h2 className="text-lg font-bold text-slate-300 mb-6 flex items-center gap-2">
-              <Database size={18} className="text-indigo-400" /> البنية المعمارية (الطبقات)
+              <Database size={18} className="text-violet-400" /> البنية المعمارية (الطبقات)
             </h2>
             <div className="space-y-3">
               {layers.map(layer => (
                 <button
                   key={layer.id}
                   onClick={() => setActiveLayer(layer.id)}
-                  className={`w-full text-right p-4 rounded-2xl flex items-center gap-4 transition-all duration-300 ${activeLayer === layer.id ? 'bg-slate-800 border-l-4 border-indigo-500 shadow-lg shadow-indigo-900/20' : 'hover:bg-slate-800/50 border-l-4 border-transparent text-slate-400 hover:text-slate-200'}`}
+                  className={`w-full text-right p-4 rounded-2xl flex items-center gap-4 transition-all duration-300 ${activeLayer === layer.id ? 'bg-slate-800 border-l-4 border-violet-500 shadow-lg shadow-violet-900/20' : 'hover:bg-slate-800/50 border-l-4 border-transparent text-slate-400 hover:text-slate-200'}`}
                 >
                   <div className={`p-2 rounded-xl ${layer.color} text-white shadow-lg`}>
                     {layer.icon}
@@ -105,7 +105,7 @@ export default function MistarEduOS({ onBack }: { onBack: () => void }) {
         <div className="flex-1 p-6 lg:p-12 overflow-y-auto relative bg-grid-slate-800/[0.04]">
           {/* Background decoration */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-            <BrainCircuit size={400} className="text-indigo-500 blur-[100px]" />
+            <BrainCircuit size={400} className="text-violet-500 blur-[100px]" />
           </div>
 
           <AnimatePresence mode="wait">
@@ -136,7 +136,7 @@ export default function MistarEduOS({ onBack }: { onBack: () => void }) {
                     key={idx} 
                     className="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl backdrop-blur-sm"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-indigo-400 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-violet-400 mb-4">
                       <Sparkles size={20} />
                     </div>
                     <h3 className="font-bold text-lg text-white mb-2">{feat}</h3>
@@ -148,28 +148,28 @@ export default function MistarEduOS({ onBack }: { onBack: () => void }) {
               </div>
 
               {/* Ecosystem Concept Alert */}
-              <div className="mt-12 bg-indigo-900/30 border border-indigo-500/30 rounded-3xl p-8 backdrop-blur-md relative overflow-hidden">
+              <div className="mt-12 bg-violet-900/30 border border-violet-500/30 rounded-3xl p-8 backdrop-blur-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
                   <Cpu size={120} />
                 </div>
-                <h3 className="text-2xl font-black text-indigo-300 mb-4 flex items-center gap-3">
+                <h3 className="text-2xl font-black text-violet-300 mb-4 flex items-center gap-3">
                   <Eye size={28} /> رؤية استباقية (Zero-Paper OS)
                 </h3>
-                <p className="text-indigo-100/80 leading-relaxed text-lg max-w-2xl relative z-10">
+                <p className="text-violet-100/80 leading-relaxed text-lg max-w-2xl relative z-10">
                   في هذا النظام، المعلم لم يعد ناقلاً للمعلومة أو مُدخلاً للبيانات. الذكاء الاصطناعي يقوم بالرصد، التصحيح، 
                   تحليل النتائج، واقتراح التدخلات. دور المعلم يتحول بالكامل إلى صانع شخصيات، مرشد نفسي، وموجه معرفي.
                 </p>
                 <div className="flex gap-4 mt-8 relative z-10">
-                  <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-xl p-4 flex-1 text-center">
-                    <div className="font-mono text-indigo-400 text-sm mb-1">Architecture</div>
+                  <div className="bg-violet-950/50 border border-violet-500/20 rounded-xl p-4 flex-1 text-center">
+                    <div className="font-mono text-violet-400 text-sm mb-1">Architecture</div>
                     <div className="font-bold text-white">Microservices & K8s</div>
                   </div>
-                  <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-xl p-4 flex-1 text-center">
-                    <div className="font-mono text-indigo-400 text-sm mb-1">AI Models</div>
+                  <div className="bg-violet-950/50 border border-violet-500/20 rounded-xl p-4 flex-1 text-center">
+                    <div className="font-mono text-violet-400 text-sm mb-1">AI Models</div>
                     <div className="font-bold text-white">Transformers & OCR</div>
                   </div>
-                  <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-xl p-4 flex-1 text-center">
-                    <div className="font-mono text-indigo-400 text-sm mb-1">Data</div>
+                  <div className="bg-violet-950/50 border border-violet-500/20 rounded-xl p-4 flex-1 text-center">
+                    <div className="font-mono text-violet-400 text-sm mb-1">Data</div>
                     <div className="font-bold text-white">Elasticsearch & Redis</div>
                   </div>
                 </div>
