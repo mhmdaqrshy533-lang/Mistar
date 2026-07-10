@@ -10,6 +10,10 @@ import {
 } from 'lucide-react';
 
 import PhysicsEditor from '../components/PhysicsEditor';
+import MathEditor from '../components/MathEditor';
+import { BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
+
 type ExamTemplate = 'ministerial' | 'government' | 'private' | 'monthly' | 'unified' | 'certificate' | 'model' | 'stem' | 'international' | 'academy' | 'minimal_white' | 'elegant_blue' | 'emerald_edu' | 'royal_purple' | 'dark_pro' | string;
 
 const TEMPLATES = [
@@ -82,6 +86,7 @@ interface Question {
   correctAnswer?: string;
   notes?: string;
   physicsElements?: any[];
+  latexData?: string;
 }
 
 const subjectToolbox: Record<string, { type: QuestionType, label: string, icon: any }[]> = {
@@ -177,6 +182,10 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
   const [physicsEditorOpen, setPhysicsEditorOpen] = useState(false);
   const [physicsEditorQuestionId, setPhysicsEditorQuestionId] = useState<string | null>(null);
   const [physicsEditorInitialCategory, setPhysicsEditorInitialCategory] = useState<string>('electricity');
+  
+  const [mathEditorOpen, setMathEditorOpen] = useState(false);
+  const [mathEditorQuestionId, setMathEditorQuestionId] = useState<string | null>(null);
+  const [mathEditorInitialLatex, setMathEditorInitialLatex] = useState<string>('');
 
   // Auto-fill institutional & teacher data from local storage
   useEffect(() => {
@@ -310,7 +319,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
             <button onClick={generateAlternativeModel} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors">
               <Shuffle size={14} /> إنشاء نموذج {examData.model === 'أ' ? 'ب' : 'أ'}
             </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors border-r border-slate-200 pl-2">
+            <button onClick={() => window.print()} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors border-r border-slate-200 pl-2">
               <Printer size={14} /> طباعة
             </button>
             <button className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors">
@@ -737,6 +746,33 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                                <span className="text-slate-400 text-sm font-sans mr-2 print:hidden">معادلة فيزيائية</span>
                              </div>
                            </div>
+                        )}
+
+                        {q.type === 'math' && (
+                          <div 
+                            className={`mt-4 w-full min-h-24 border-2 ${q.latexData ? 'border-transparent' : 'border-dashed border-slate-300'} rounded-md flex flex-col items-center justify-center text-slate-400 bg-slate-50 print:bg-white relative overflow-hidden cursor-pointer hover:border-emerald-400 hover:shadow-sm transition-all group`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMathEditorQuestionId(q.id);
+                              setMathEditorInitialLatex(q.latexData || '');
+                              setMathEditorOpen(true);
+                            }}
+                          >
+                            {!q.latexData ? (
+                              <div className="text-center z-10 group-hover:scale-105 transition-transform py-6">
+                                <Calculator className="w-8 h-8 mx-auto mb-2 opacity-50 print:hidden text-emerald-500" />
+                                <span className="text-sm font-bold text-slate-500 print:hidden">محرر المعادلات الرياضية</span>
+                                <p className="text-xs mt-1 print:hidden">انقر لفتح المحرر وإضافة معادلة</p>
+                              </div>
+                            ) : (
+                              <div className="w-full h-full relative p-4 flex items-center justify-center text-xl text-slate-900" dir="ltr">
+                                <BlockMath math={q.latexData} />
+                                <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                                  انقر للتعديل
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
 
                         {q.type === 'verses' && (
@@ -1306,6 +1342,26 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
           }
           setPhysicsEditorOpen(false);
           setPhysicsEditorQuestionId(null);
+        }}
+      />
+
+      <MathEditor
+        isOpen={mathEditorOpen}
+        onClose={() => {
+          setMathEditorOpen(false);
+          setMathEditorQuestionId(null);
+        }}
+        initialLatex={mathEditorInitialLatex}
+        onSave={(latex) => {
+          if (mathEditorQuestionId) {
+            setQuestions(questions.map(q =>
+              q.id === mathEditorQuestionId
+                ? { ...q, latexData: latex }
+                : q
+            ));
+          }
+          setMathEditorOpen(false);
+          setMathEditorQuestionId(null);
         }}
       />
 

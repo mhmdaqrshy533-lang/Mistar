@@ -38,13 +38,7 @@ export class ProactiveEngine {
   }
 
   private startBackgroundAnalysis() {
-    // Simulating the proactive AI discovering insights over time
-    setInterval(() => {
-      const insight = this.generateRandomInsight();
-      if (insight) {
-        this.notify(insight);
-      }
-    }, 45000); // Check every 45s for demo purposes
+    // Disabled fake background notifications
   }
 
   private generateRandomInsight(): AINotification | null {
@@ -94,20 +88,5 @@ export class ProactiveEngine {
   public analyzeExamResults(examId: string, results: any[]) {
     // In a real system, this sends data to the Python/Transformers backend
     console.log(`[ProactiveEngine] Analyzing results for exam ${examId}...`);
-    // Simulated instant reaction
-    setTimeout(() => {
-      this.notify({
-        id: `ai-exam-${Date.now()}`,
-        type: 'insight',
-        title: 'تحليل نتائج الاختبار',
-        description: 'تم اكتشاف فجوة معرفية في السؤال الثالث. هل ترغب في توليد أوراق عمل علاجية؟',
-        priority: 'medium',
-        timestamp: new Date().toISOString(),
-        targetRole: 'teacher',
-        actionLabel: 'توليد أوراق عمل',
-        actionRoute: 'ai_section',
-        isRead: false
-      });
-    }, 2000);
   }
 }
