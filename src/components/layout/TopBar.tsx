@@ -1,8 +1,11 @@
 import React from 'react';
-import { Search, Bell, Settings, User, HelpCircle } from 'lucide-react';
+import { Search, Bell, Settings, User, HelpCircle, Download, CloudOff, Wifi } from 'lucide-react';
 import { motion } from 'motion/react';
+import { usePWA } from '../../hooks/usePWA';
 
 export const TopBar = () => {
+  const { isInstallable, isOffline, installApp } = usePWA();
+
   return (
     <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shrink-0">
       {/* Search Bar */}
@@ -19,8 +22,33 @@ export const TopBar = () => {
         </div>
       </div>
 
-      {/* User Info & Actions */}
+      {/* User Info & Actions & PWA Indicators */}
       <div className="flex items-center gap-4 mr-auto md:mr-0">
+        
+        {/* Offline / Online Status Badge */}
+        {isOffline ? (
+          <div className="flex items-center gap-1.5 bg-rose-50 text-rose-600 border border-rose-100 px-3 py-1.5 rounded-xl text-xs font-black select-none animate-pulse">
+            <CloudOff size={14} className="stroke-[2.5]" />
+            <span>يعمل دون اتصال</span>
+          </div>
+        ) : (
+          <div className="hidden sm:flex items-center gap-1 bg-emerald-50 text-emerald-600 border border-emerald-100 px-2.5 py-1 rounded-xl text-[10px] font-bold select-none">
+            <Wifi size={12} className="stroke-[2.5]" />
+            <span>متصل</span>
+          </div>
+        )}
+
+        {/* PWA Install Button */}
+        {isInstallable && (
+          <button 
+            onClick={installApp}
+            className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md shadow-indigo-600/20 active:scale-95 transition-all"
+          >
+            <Download size={14} className="stroke-[3]" />
+            <span>تثبيت التطبيق</span>
+          </button>
+        )}
+
         <div className="hidden sm:flex flex-col items-end">
           <span className="text-xs font-black text-slate-400">العام الدراسي 2024/2025</span>
           <span className="text-[10px] font-bold text-violet-600 bg-violet-50 px-2 rounded-full">الفصل الأول</span>
