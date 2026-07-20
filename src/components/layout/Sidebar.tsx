@@ -21,7 +21,7 @@ import { useOS } from '../../context/OSContext';
 interface SidebarItemProps {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: any;
   isActive: boolean;
   isCollapsed: boolean;
   onClick: (id: string) => void;
@@ -92,7 +92,7 @@ export const Sidebar = () => {
         initial={false}
         animate={{ 
           width: isCollapsed ? '80px' : '260px',
-          x: isMobileOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth < 1024 ? '100%' : 0)
+          x: isMobileOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth < 1024 ? '100%' : (0 as any))
         }}
         className={`fixed inset-y-0 right-0 bg-white border-l border-slate-200 z-50 flex flex-col transition-all duration-300 lg:relative lg:translate-x-0
           ${isCollapsed ? 'px-3' : 'px-4'}`}

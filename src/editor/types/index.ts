@@ -21,6 +21,9 @@ export interface TextElement extends BaseElement {
   fontWeight: string;
   color: string;
   textAlign: 'left' | 'center' | 'right' | 'justify';
+  isQuestion?: boolean;
+  questionNumber?: number;
+  marks?: number;
 }
 
 export interface MathElement extends BaseElement {
@@ -49,6 +52,26 @@ export interface Page {
   elements: EditorElement[];
 }
 
+export interface ExamMetadata {
+  governorate: string;
+  directorate: string;
+  school: string;
+  stage: string;       // المرحلة
+  grade: string;       // الصف
+  division: string;    // الشعبة
+  subject: string;     // المادة
+  semester: string;    // الفصل الدراسي
+  round: string;       // الدور
+  academicYear: string;// العام الدراسي
+  examTitle: string;   // عنوان الاختبار
+  time: string;        // الزمن
+  marks: string;       // الدرجة الكلية
+  examType: string;    // نوع الاختبار
+  teacherName: string;
+  schoolPrincipal?: string; // اسم مدير المدرسة
+  templateType: 'none' | 'ministerial' | 'private';
+}
+
 export interface DocumentState {
   id: string;
   title: string;
@@ -56,4 +79,6 @@ export interface DocumentState {
   paperSize: 'A4' | 'A3' | 'Letter' | 'Legal';
   orientation: 'portrait' | 'landscape';
   margins: { top: number; right: number; bottom: number; left: number };
+  metadata: ExamMetadata;
 }
+

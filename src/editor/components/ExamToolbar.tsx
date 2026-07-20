@@ -1,101 +1,514 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useEditorStore } from '../store/useEditorStore';
-import { ZoomIn, ZoomOut, Save, Download, Printer, Settings, Undo, Redo, LayoutGrid, Ruler, ArrowRight } from 'lucide-react';
+import { 
+  PlusCircle, Image as ImageIcon, Table, Calculator, Zap, 
+  Search, Layout, Sliders, Eye, FileDown, X, ArrowRight, Undo2, Redo2, Check
+} from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { ExamSettingsDialog } from './ExamSettingsDialog';
+import { EditorElement } from '../types';
 
 export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
-  const { zoom, setZoom, snapToGrid, toggleSnapToGrid, showRulers, toggleRulers, document } = useEditorStore();
+  const { 
+    zoom, setZoom, document, activePageIndex, addQuestion, addElement, updateMetadata,
+    history, future, undo, redo, selectElement
+  } = useEditorStore();
 
+  const [showSettings, setShowSettings] = useState(false);
+  const [showQuestionBank, setShowQuestionBank] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState('الكل');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // High-Fidelity PDF Exporting Engine
   const handleExportPDF = async () => {
-    // Basic export for the active page
-    const canvasElement = window.document.getElementById('exam-canvas-page-0'); // Will add this ID to canvas
+    const canvasElement = window.document.getElementById(`exam-canvas-page-${activePageIndex}`);
     if (!canvasElement) return;
 
     try {
-      const canvas = await html2canvas(canvasElement, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
+      const opt = {
+        scale: 4, // 300-400 DPI rendering quality
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      };
+
+      const canvas = await html2canvas(canvasElement, opt);
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // A4 size in mm
       const pdfWidth = 210;
       const pdfHeight = 297;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${document.title}.pdf`);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      pdf.save(`${document.metadata.examTitle || 'raq_exam'}.pdf`);
     } catch (e) {
-      console.error('Failed to generate PDF', e);
+      console.error('PDF Engine error:', e);
     }
   };
 
+  // Add Table Helper
+  const handleAddTable = () => {
+    const tableHTML = `
+      <table style="width:100%; border-collapse:collapse; border:2px solid black; text-align:center; font-family:inherit; direction:rtl;">
+        <thead>
+          <tr style="background:#f1f5f9; font-weight:bold;">
+            <th style="border:1px solid black; padding:6px; font-size:12px; width:20%;">رقم</th>
+            <th style="border:1px solid black; padding:6px; font-size:12px;">المعطيات المطلوب إكمالها</th>
+            <th style="border:1px solid black; padding:6px; font-size:12px; width:25%;">الدرجة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid black; padding:6px; font-size:12px;">1</td>
+            <td style="border:1px solid black; padding:6px; font-size:12px;">.........................................</td>
+            <td style="border:1px solid black; padding:6px; font-size:12px;">درجتان</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid black; padding:6px; font-size:12px;">2</td>
+            <td style="border:1px solid black; padding:6px; font-size:12px;">.........................................</td>
+            <td style="border:1px solid black; padding:6px; font-size:12px;">درجتان</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+
+    const newTable: EditorElement = {
+      id: crypto.randomUUID(),
+      type: 'text',
+      x: 50,
+      y: 350,
+      width: 694,
+      height: 120,
+      rotation: 0,
+      isLocked: false,
+      isHidden: false,
+      zIndex: 2,
+      content: tableHTML,
+      fontSize: 14,
+      fontFamily: 'Inter',
+      fontWeight: 'normal',
+      color: '#000000',
+      textAlign: 'center'
+    };
+    
+    addElement(activePageIndex, newTable);
+  };
+
+  // Add Image triggers
+  const triggerImageUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const newImage: EditorElement = {
+            id: crypto.randomUUID(),
+            type: 'image',
+            x: 200,
+            y: 300,
+            width: 220,
+            height: 180,
+            rotation: 0,
+            isLocked: false,
+            isHidden: false,
+            zIndex: 3,
+            src: event.target.result as string
+          };
+          addElement(activePageIndex, newImage);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Add LaTeX math equation block
+  const handleAddMath = () => {
+    const newMath: EditorElement = {
+      id: crypto.randomUUID(),
+      type: 'math',
+      x: 250,
+      y: 320,
+      width: 250,
+      height: 70,
+      rotation: 0,
+      isLocked: false,
+      isHidden: false,
+      zIndex: 4,
+      latex: '\\Delta x \\cdot \\Delta p \\ge \\frac{\\hbar}{2}',
+      fontSize: 20,
+      color: '#1e1b4b'
+    };
+    addElement(activePageIndex, newMath);
+  };
+
+  // Physics diagrams vectors (Prism refraction, circuit resistor, force vector)
+  const PHYSICS_PRESETS = [
+    {
+      name: 'منشور زجاجي ومسار الضوء',
+      svg: `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"><polygon points="60,15 15,85 105,85" stroke="black" stroke-width="2.5" fill="none"/><line x1="1" y1="65" x2="38" y2="52" stroke="red" stroke-width="2"/><line x1="38" y1="52" x2="82" y2="52" stroke="red" stroke-width="2" stroke-dasharray="2"/><line x1="82" y1="52" x2="119" y2="75" stroke="red" stroke-width="2"/><text x="40" y="42" font-size="9" font-family="sans-serif">A</text></svg>`
+    },
+    {
+      name: 'مقاومة كهربائية وبطارية',
+      svg: `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"><rect x="20" y="20" width="80" height="50" rx="3" stroke="black" stroke-width="2" fill="none"/><line x1="50" y1="20" x2="50" y2="10" stroke="black" stroke-width="2"/><line x1="70" y1="20" x2="70" y2="10" stroke="black" stroke-width="2"/><path d="M40 70 L48 65 L56 75 L64 65 L72 75 L80 70" stroke="red" stroke-width="2" fill="none"/><circle cx="50" cy="20" r="3" fill="black"/><circle cx="70" cy="20" r="3" fill="black"/><text x="54" y="60" font-size="9" fill="red">R</text></svg>`
+    },
+    {
+      name: 'قوة مائلة على كتلة',
+      svg: `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"><line x1="10" y1="80" x2="110" y2="80" stroke="black" stroke-width="3"/><rect x="40" y="45" width="40" height="35" stroke="black" stroke-width="2" fill="#f1f5f9"/><line x1="60" y1="62" x2="100" y2="32" stroke="blue" stroke-width="2" marker-end="url(#arrow)"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 Z" fill="blue"/></marker></defs><text x="85" y="48" font-size="8" fill="blue">F</text></svg>`
+    }
+  ];
+
+  const handleAddPhysics = (svg: string) => {
+    const newPhysics: EditorElement = {
+      id: crypto.randomUUID(),
+      type: 'physics',
+      x: 250,
+      y: 350,
+      width: 140,
+      height: 120,
+      rotation: 0,
+      isLocked: false,
+      isHidden: false,
+      zIndex: 3,
+      svgContent: svg,
+      strokeColor: '#000000',
+      strokeWidth: 2
+    };
+    addElement(activePageIndex, newPhysics);
+  };
+
+  // Mock Question Bank questions
+  const BANK_QUESTIONS = [
+    { id: 'bq1', subject: 'الفيزياء', grade: 'التاسع الأساسي', text: 'علل ما يأتي: تزداد مقاومة الموصل الفلزي بارتفاع درجة حرارته.', marks: 5 },
+    { id: 'bq2', subject: 'الفيزياء', grade: 'التاسع الأساسي', text: 'احسب شدة التيار المار في مقاومة مقدارها 10 أوم عندما يكون فرق الجهد 220 فولت.', marks: 10 },
+    { id: 'bq3', subject: 'الرياضيات', grade: 'التاسع الأساسي', text: 'أوجد مجموعة حل المعادلة س² - 5س + 6 = 0 بالتحليل المباشر.', marks: 6 },
+    { id: 'bq4', subject: 'الرياضيات', grade: 'التاسع الأساسي', text: 'باستخدام القانون العام، أوجد جذري المعادلة: س² - 4س + 1 = 0.', marks: 8 },
+    { id: 'bq5', subject: 'اللغة العربية', grade: 'التاسع الأساسي', text: 'أعرب كلمة (المعلم) في الجملة الآتية: "كاد المعلم أن يكون رسولاً".', marks: 4 },
+    { id: 'bq6', subject: 'التربية الإسلامية', grade: 'التاسع الأساسي', text: 'ما هي أركان الإيمان؟ اذكرها بالتفصيل مع بيان أهمية النية.', marks: 5 },
+    { id: 'bq7', subject: 'القرآن الكريم', grade: 'التاسع الأساسي', text: 'اكتب من سورة النبأ من قوله تعالى: "عم يتساءلون..." إلى قوله "...وجعلنا السراج وهاجاً".', marks: 10 }
+  ];
+
+  const handleAddFromBank = (text: string, marks: number) => {
+    addQuestion(activePageIndex, text);
+    setShowQuestionBank(false);
+  };
+
+  // Toolbar elements rendering data
+  const TOOLS = [
+    { id: 'add_question', label: 'إضافة سؤال', desc: 'إدراج تلقائي مرقم', icon: PlusCircle, color: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100/70 border-emerald-200', action: () => addQuestion(activePageIndex) },
+    { id: 'add_image', label: 'إضافة صورة', desc: 'شعار أو رسم توضيحي', icon: ImageIcon, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100/70 border-blue-200', action: triggerImageUpload },
+    { id: 'add_table', label: 'إضافة جدول', desc: 'جدول أسئلة متكامل', icon: Table, color: 'text-cyan-600 bg-cyan-50 hover:bg-cyan-100/70 border-cyan-200', action: handleAddTable },
+    { id: 'add_math', label: 'معادلة رياضية', desc: 'رموز ومعادلات LaTeX', icon: Calculator, color: 'text-violet-600 bg-violet-50 hover:bg-violet-100/70 border-violet-200', action: handleAddMath },
+    { id: 'add_physics', label: 'رسم فيزياء', desc: 'نماذج متجهات ودوائر', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100/70 border-amber-200', action: () => handleAddPhysics(PHYSICS_PRESETS[0].svg) },
+    { id: 'bank', label: 'بنك الأسئلة', desc: 'مكتبة يمنية متكاملة', icon: Search, color: 'text-rose-600 bg-rose-50 hover:bg-rose-100/70 border-rose-200', action: () => setShowQuestionBank(true) },
+    { id: 'templates', label: 'القوالب', desc: 'وزاري، مدرسي، مبسط', icon: Layout, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100/70 border-purple-200', action: () => setShowTemplates(true) },
+    { id: 'settings', label: 'بيانات الامتحان', desc: 'تخصيص كامل الترويسة', icon: Sliders, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100/70 border-indigo-200', action: () => setShowSettings(true) },
+    { id: 'preview', label: 'المعاينة', desc: 'شاشة طباعة فورية', icon: Eye, color: 'text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-slate-300', action: () => setShowPreview(true) },
+    { id: 'pdf', label: 'حفظ PDF', desc: 'تصدير عالي الدقة 300DPI', icon: FileDown, color: 'text-white bg-rose-600 hover:bg-rose-700 border-rose-700 shadow-rose-200 shadow-md', action: handleExportPDF }
+  ];
+
   return (
-    <div className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shadow-sm z-10 shrink-0">
-      <div className="flex items-center gap-4">
-        {onBack && (
-          <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="عودة">
-            <ArrowRight size={18} />
+    <>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleImageChange} 
+        accept="image/*" 
+        className="hidden" 
+      />
+
+      {/* Primary Desktop Top Bar Header */}
+      <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm shrink-0 font-sans select-none z-30 relative" dir="rtl">
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-all">
+              <ArrowRight size={18} />
+            </button>
+          )}
+          <div>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+              <span>محرر الرقيم</span>
+              <span className="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">ذكي ومحلي</span>
+            </h1>
+          </div>
+          <div className="h-6 w-px bg-slate-200"></div>
+          <span className="text-xs font-black text-slate-400 max-w-[200px] truncate">
+            {document.metadata.school} - {document.metadata.subject}
+          </span>
+        </div>
+
+        {/* Undo/Redo/Zoom shortcuts */}
+        <div className="flex items-center gap-2">
+          <button 
+            disabled={history.length === 0}
+            onClick={undo}
+            className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 disabled:opacity-30 transition-all" 
+            title="تراجع"
+          >
+            <Undo2 size={16} />
           </button>
-        )}
-        <h1 className="text-xl font-black text-slate-800">الرقيم</h1>
-        <div className="h-6 w-px bg-slate-200 mx-2"></div>
-        <span className="text-sm font-bold text-slate-600">{document.title}</span>
+          <button 
+            disabled={future.length === 0}
+            onClick={redo}
+            className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 disabled:opacity-30 transition-all" 
+            title="إعادة"
+          >
+            <Redo2 size={16} />
+          </button>
+          
+          <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
+          <button onClick={() => setZoom(zoom - 10)} className="text-xs font-extrabold text-slate-400 hover:text-slate-800 transition-colors">صغّر</button>
+          <span className="text-xs font-black text-slate-700 bg-slate-100 px-2 py-1 rounded-md" dir="ltr">{zoom}%</span>
+          <button onClick={() => setZoom(zoom + 10)} className="text-xs font-extrabold text-slate-400 hover:text-slate-800 transition-colors">كبّر</button>
+        </div>
+      </header>
+
+      {/* Main Large Tools Control Panel - Floating/Bottom Mobile adaptive */}
+      <div className="bg-slate-50 border-b border-slate-200 py-3 px-4 z-20 overflow-x-auto shrink-0 select-none shadow-inner" dir="rtl">
+        <div className="flex items-stretch gap-2.5 min-w-max pb-1 md:pb-0">
+          {TOOLS.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <button
+                key={tool.id}
+                onClick={tool.action}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all text-right group ${tool.color}`}
+              >
+                <div className="p-2 rounded-xl bg-white/70 shadow-sm shrink-0">
+                  <Icon size={20} className="stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="text-xs font-black leading-tight">{tool.label}</div>
+                  <div className="text-[10px] font-semibold opacity-60 leading-tight mt-0.5">{tool.desc}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Undo / Redo */}
-        <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="تراجع">
-          <Undo size={18} />
-        </button>
-        <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="إعادة">
-          <Redo size={18} />
-        </button>
-
-        <div className="h-6 w-px bg-slate-200 mx-2"></div>
-
-        {/* View Options */}
+      {/* BOTTOM BAR FOR MOBILE LAUNCH */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white shadow-2xl z-40 flex items-center justify-around py-2.5 px-4">
+        {TOOLS.slice(0, 5).map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <button 
+              key={tool.id} 
+              onClick={tool.action} 
+              className="flex flex-col items-center gap-1 text-slate-600 hover:text-indigo-600 active:scale-95 transition-all"
+            >
+              <div className="p-1.5 rounded-xl bg-slate-50">
+                <Icon size={18} />
+              </div>
+              <span className="text-[9px] font-extrabold">{tool.label}</span>
+            </button>
+          );
+        })}
         <button 
-          onClick={toggleSnapToGrid}
-          className={`p-2 rounded-lg transition-colors ${snapToGrid ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-slate-100 text-slate-500'}`} 
-          title="الشبكة"
+          onClick={() => setShowSettings(true)}
+          className="flex flex-col items-center gap-1 text-slate-600 hover:text-indigo-600 active:scale-95 transition-all"
         >
-          <LayoutGrid size={18} />
-        </button>
-        <button 
-          onClick={toggleRulers}
-          className={`p-2 rounded-lg transition-colors ${showRulers ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-slate-100 text-slate-500'}`} 
-          title="المسطرة"
-        >
-          <Ruler size={18} />
-        </button>
-
-        <div className="h-6 w-px bg-slate-200 mx-2"></div>
-
-        {/* Zoom */}
-        <button onClick={() => setZoom(zoom - 10)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
-          <ZoomOut size={18} />
-        </button>
-        <span className="text-sm font-bold w-12 text-center text-slate-700" dir="ltr">{zoom}%</span>
-        <button onClick={() => setZoom(zoom + 10)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
-          <ZoomIn size={18} />
-        </button>
-
-        <div className="h-6 w-px bg-slate-200 mx-2"></div>
-
-        {/* Export / Save */}
-        <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="حفظ">
-          <Save size={18} />
-        </button>
-        <button onClick={handleExportPDF} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="تصدير PDF">
-          <Download size={18} />
-        </button>
-        <button onClick={() => window.print()} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500" title="طباعة">
-          <Printer size={18} />
+          <div className="p-1.5 rounded-xl bg-indigo-50 text-indigo-600">
+            <Sliders size={18} />
+          </div>
+          <span className="text-[9px] font-extrabold">بيانات الترويسة</span>
         </button>
       </div>
-    </div>
+
+      {/* MODAL 1: Exam Info Settings */}
+      {showSettings && <ExamSettingsDialog onClose={() => setShowSettings(false)} />}
+
+      {/* MODAL 2: Question Bank Panel (لوحة بنك الأسئلة الصغيرة الذكية) */}
+      {showQuestionBank && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans" dir="rtl">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh] border border-slate-100">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="font-black text-slate-800 text-lg">بنك الأسئلة المحلي الذكي</h3>
+                <p className="text-[11px] font-semibold text-slate-400">اختر السؤال ليُضاف فوراً بموقعه المناسب</p>
+              </div>
+              <button onClick={() => setShowQuestionBank(false)} className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Filters bar */}
+            <div className="p-4 bg-slate-50/50 border-b border-slate-100 space-y-3">
+              <div className="relative">
+                <Search className="absolute right-3 top-2.5 text-slate-400" size={16} />
+                <input 
+                  type="text" 
+                  placeholder="ابحث بالكلمات الدليلة (مثال: مقاومة، معادلة)..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl pr-9 pl-4 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                />
+              </div>
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                {['الكل', 'الفيزياء', 'الرياضيات', 'اللغة العربية', 'التربية الإسلامية', 'القرآن الكريم'].map((sub) => (
+                  <button
+                    key={sub}
+                    onClick={() => setSubjectFilter(sub)}
+                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold shrink-0 transition-all ${
+                      subjectFilter === sub 
+                        ? 'bg-indigo-600 text-white' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="p-4 overflow-y-auto custom-scrollbar space-y-2.5 flex-1 max-h-[40vh]">
+              {BANK_QUESTIONS.filter(q => {
+                const matchesSearch = q.text.includes(searchQuery);
+                const matchesSubject = subjectFilter === 'الكل' || q.subject === subjectFilter;
+                return matchesSearch && matchesSubject;
+              }).map(q => (
+                <div 
+                  key={q.id} 
+                  onClick={() => handleAddFromBank(q.text, q.marks)}
+                  className="p-3 border border-slate-100 hover:border-indigo-400 bg-white hover:bg-indigo-50/10 rounded-2xl cursor-pointer transition-all flex flex-col gap-2 shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-black px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full">{q.subject} - {q.grade}</span>
+                    <span className="text-[10px] font-bold text-rose-600">[{q.marks} درجات]</span>
+                  </div>
+                  <p className="text-xs font-bold text-slate-700 leading-relaxed text-right">{q.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Templates Selector */}
+      {showTemplates && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans" dir="rtl">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col border border-slate-100">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="font-black text-slate-800 text-base">نماذج وقوالب الامتحانات</h3>
+                <p className="text-[11px] font-semibold text-slate-400">تغيير تصميم الورقة والترويسة بكبسة زر</p>
+              </div>
+              <button onClick={() => setShowTemplates(false)} className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {/* Template cards */}
+              <div 
+                onClick={() => {
+                  updateMetadata({ templateType: 'ministerial' });
+                  setShowTemplates(false);
+                }}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between hover:shadow-md ${
+                  document.metadata.templateType === 'ministerial' 
+                    ? 'border-indigo-600 bg-indigo-50/20' 
+                    : 'border-slate-100 hover:border-indigo-200'
+                }`}
+              >
+                <div className="text-right">
+                  <div className="text-xs font-black text-slate-800">قالب وزارة التربية والتعليم اليمني</div>
+                  <div className="text-[10px] text-slate-400 mt-1 font-semibold">ترويسة ثنائية الحدود، صندوق درجات، قسيمة قص مخصصة</div>
+                </div>
+                {document.metadata.templateType === 'ministerial' && <Check className="text-indigo-600" size={18} />}
+              </div>
+
+              <div 
+                onClick={() => {
+                  updateMetadata({ templateType: 'private' });
+                  setShowTemplates(false);
+                }}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between hover:shadow-md ${
+                  document.metadata.templateType === 'private' 
+                    ? 'border-indigo-600 bg-indigo-50/20' 
+                    : 'border-slate-100 hover:border-indigo-200'
+                }`}
+              >
+                <div className="text-right">
+                  <div className="text-xs font-black text-slate-800">قالب المدارس الخاصة والأهلية</div>
+                  <div className="text-[10px] text-slate-400 mt-1 font-semibold">تصميم عصري ملون، بطاقة ترويسة، خطوط ناعمة</div>
+                </div>
+                {document.metadata.templateType === 'private' && <Check className="text-indigo-600" size={18} />}
+              </div>
+
+              <div 
+                onClick={() => {
+                  updateMetadata({ templateType: 'none' });
+                  setShowTemplates(false);
+                }}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between hover:shadow-md ${
+                  document.metadata.templateType === 'none' 
+                    ? 'border-indigo-600 bg-indigo-50/20' 
+                    : 'border-slate-100 hover:border-indigo-200'
+                }`}
+              >
+                <div className="text-right">
+                  <div className="text-xs font-black text-slate-800">بدون ترويسة (مسودة حرة)</div>
+                  <div className="text-[10px] text-slate-400 mt-1 font-semibold">مساحة بيضاء كاملة لتخطيط وتأليف الأسئلة بحرية</div>
+                </div>
+                {document.metadata.templateType === 'none' && <Check className="text-indigo-600" size={18} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Fullscreen Print Preview Overlay */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col font-sans" dir="rtl">
+          <div className="h-14 bg-slate-800 text-white px-6 flex items-center justify-between shadow-lg select-none">
+            <div className="flex items-center gap-2">
+              <h3 className="font-black text-sm">شاشة معاينة الطباعة النهائية</h3>
+              <span className="text-[10px] bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded font-bold">بدقة 300 DPI</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleExportPDF}
+                className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all"
+              >
+                تنزيل ملف PDF فوراً
+              </button>
+              <button 
+                onClick={() => setShowPreview(false)} 
+                className="p-1.5 hover:bg-slate-700 rounded-xl text-slate-300 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto bg-slate-950 p-6 flex justify-center items-start">
+            <div className="bg-white shadow-2xl p-4 rounded-lg scale-90 origin-top">
+              {/* Target the actual page render perfectly */}
+              <div 
+                style={{ width: '794px', height: '1123px' }}
+                className="bg-white relative overflow-hidden"
+                dangerouslySetInnerHTML={{ 
+                  __html: window.document.getElementById(`exam-canvas-page-${activePageIndex}`)?.innerHTML || '' 
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
