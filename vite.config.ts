@@ -11,14 +11,36 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg'],
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        workbox: {
+          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            }
+          ]
+        },
         manifest: {
-          name: 'Exam Studio',
-          short_name: 'ExamStudio',
-          description: 'تطبيق إنشاء وتحرير الامتحانات',
-          theme_color: '#8b5cf6',
+          name: 'تطبيق الرقيم التعليمي',
+          short_name: 'الرقيم',
+          description: 'المنصة التعليمية الشاملة للمعلم اليمني - امتحانات، كشوفات، خطط',
+          theme_color: '#1e293b',
           display: 'standalone',
           background_color: '#ffffff',
+          lang: 'ar',
+          dir: 'rtl',
           icons: [
             {
               src: 'pwa-192x192.png',

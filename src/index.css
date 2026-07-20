@@ -24,3 +24,16 @@ body {
   background: linear-gradient(135deg, var(--color-royal-purple) 0%, var(--color-royal-purple-dark) 100%);
 }
 
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+}
+

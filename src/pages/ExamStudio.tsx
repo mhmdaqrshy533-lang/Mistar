@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  ArrowRight, School, BookOpen, User, Plus, FileText, CheckCircle2, 
+  ArrowRight, School, BookOpen, User, Plus, Minus, FileText, CheckCircle2, 
   Settings, Save, Printer, Download, Search, LayoutTemplate, 
   Type, CheckSquare, List, GripVertical, Image as ImageIcon,
   Calculator, AlignRight, Trash2, Edit3, AlertCircle, Copy, Shuffle,
@@ -17,24 +17,15 @@ import 'katex/dist/katex.min.css';
 type ExamTemplate = 'ministerial' | 'government' | 'private' | 'monthly' | 'unified' | 'certificate' | 'model' | 'stem' | 'international' | 'academy' | 'minimal_white' | 'elegant_blue' | 'emerald_edu' | 'royal_purple' | 'dark_pro' | string;
 
 const TEMPLATES = [
-  // Official
-  { id: 'ministerial', name: 'الوزاري اليمني الكلاسيكي', type: 'وزاري', desc: 'مناسب للاختبارات النهائية' },
-  { id: 'government', name: 'الحكومي الحديث', type: 'حكومي', desc: 'تصميم أكثر حداثة مع شعار المدرسة' },
-  { id: 'unified', name: 'الاختبارات الموحدة', type: 'حكومي', desc: 'للاختبارات على مستوى المنطقة' },
-  { id: 'transfer', name: 'اختبارات النقل', type: 'حكومي', desc: 'للصفوف الانتقالية' },
-  { id: 'certificate', name: 'اختبارات الشهادات', type: 'شهادة', desc: 'ترويسة رسمية وحدود زخرفية' },
-  // Schools
-  { id: 'private', name: 'المدارس الخاصة', type: 'خاص', desc: 'ألوان المدرسة وإمكانية إضافة الشعار' },
-  { id: 'model', name: 'المدارس النموذجية', type: 'خاص', desc: 'تصميم أنيق ومتقدم' },
-  { id: 'stem', name: 'مدارس STEM', type: 'خاص', desc: 'طابع هندسي وعلمي' },
-  { id: 'international', name: 'المدارس الدولية', type: 'دولي', desc: 'تصميم معاصر' },
-  { id: 'academy', name: 'الأكاديميات', type: 'خاص', desc: 'قالب أكاديمي' },
-  // Modern
-  { id: 'minimal_white', name: 'Minimal White', type: 'حديث', desc: 'نظيف وبسيط' },
-  { id: 'elegant_blue', name: 'Elegant Blue', type: 'حديث', desc: 'أزرق أنيق وجذاب' },
-  { id: 'emerald_edu', name: 'Emerald Education', type: 'حديث', desc: 'أخضر مريح للعين' },
-  { id: 'royal_purple', name: 'Royal Purple', type: 'حديث', desc: 'بنفسجي فاخر' },
-  { id: 'dark_pro', name: 'Dark Professional', type: 'حديث', desc: 'داكن واحترافي' },
+  { id: 'ministerial', name: 'وزاري يمني كلاسيكي', type: 'وزاري', desc: 'للاختبارات النهائية الرسمية' },
+  { id: 'ministerial_modern', name: 'وزاري حديث', type: 'وزاري', desc: 'تصميم وزاري عصري' },
+  { id: 'government', name: 'حكومي', type: 'حكومي', desc: 'للمدارس الحكومية والأساسية' },
+  { id: 'private', name: 'مدارس خاصة', type: 'خاص', desc: 'ألوان المدرسة والشعار الخاص' },
+  { id: 'math_template', name: 'قالب رياضيات', type: 'رياضيات', desc: 'مخصص للمعادلات والرسوم البيانية' },
+  { id: 'physics_template', name: 'قالب فيزياء', type: 'فيزياء', desc: 'للرسوم البيانية والدوائر الكهربائية' },
+  { id: 'economic_print', name: 'قالب اقتصادي للطباعة', type: 'طباعة', desc: 'أصغر خط ومسافات مضغوطة لتوفير الورق' },
+  { id: 'black_white', name: 'قالب أبيض وأسود', type: 'طباعة', desc: 'توفير الحبر وتصوير دقيق' },
+  { id: 'colorful_template', name: 'قالب ملون', type: 'حديث', desc: 'للفصول المبكرة والتحفيز' }
 ];
 
 const THEMES = {
@@ -55,6 +46,7 @@ type ExamData = {
   // Institutional
   governorate: string;
   directorate: string;
+  uzlah: string;
   school: string;
   // Exam metadata
   year: string;
@@ -71,6 +63,8 @@ type ExamData = {
   // Teacher
   teacherName: string;
   jobTitle: string;
+  // Logo
+  logoData?: string;
 };
 
 type QuestionType = 'mcq' | 'tf' | 'fill' | 'essay' | 'match' | 'order' | 'table' | 'image' | 'math' | 'reading' | 'grammar' | 'expression' | 'calligraphy' | 'dictation' | 'verses' | 'tajweed' | 'definition' | 'reasoning' | 'comparison' | 'map' | 'experiment' | 'page_break' | 'circuit' | 'optics' | 'mechanics' | 'graph' | 'physics_equation';
@@ -87,6 +81,7 @@ interface Question {
   notes?: string;
   physicsElements?: any[];
   latexData?: string;
+  tableConfig?: { rows: number; cols: number; hasHeader: boolean };
 }
 
 const subjectToolbox: Record<string, { type: QuestionType, label: string, icon: any }[]> = {
@@ -151,13 +146,92 @@ const defaultToolbox: { type: QuestionType, label: string, icon: any }[] = [
   { type: 'page_break', label: 'فاصل صفحات', icon: FilePlus2 },
 ];
 
+const MiniExamPreview = ({ type, templateId, themeColor, logoData }: { type: string, templateId: string, themeColor: string, logoData?: string }) => {
+  const currentTheme = THEMES[themeColor as keyof typeof THEMES] || THEMES.slate;
+  
+  return (
+    <div className={`w-full h-full bg-slate-50 shadow-sm border rounded-sm flex flex-col items-center overflow-hidden relative ${currentTheme.primary.replace('border-', 'border-opacity-20 border-')}`}>
+      <div 
+        className={`origin-top flex flex-col bg-white w-[210mm] min-h-[297mm] shadow-2xl ${currentTheme.text} ${currentTheme.primary}`}
+        style={{ transform: 'scale(0.24)', padding: '15mm' }}
+      >
+        {/* Header Section */}
+        {templateId === 'ministerial' || templateId === 'ministerial_modern' ? (
+          <div className="flex justify-between items-stretch border-2 mb-2 font-serif rounded-sm border-inherit overflow-hidden">
+            <div className="w-[35%] p-2 flex flex-col justify-start leading-tight font-bold text-[9px] border-l-2 border-inherit">
+              <p className="text-[11px] mb-1">الجمهورية اليمنية</p>
+              <p>وزارة التربية والتعليم والبحث العلمي</p>
+              <p>قطاع المناهج والتوجيه</p>
+              <p>مكتب التربية ب{type === 'الرياضيات' ? 'تعز' : 'المحافظة'}</p>
+              <p>مدرسة: ...........................</p>
+            </div>
+            <div className="w-[30%] flex flex-col items-center justify-center p-1">
+              <img src={logoData || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Emblem_of_Yemen.svg/200px-Emblem_of_Yemen.svg.png"} className="h-10 object-contain mb-1" />
+              <div className="w-full border rounded-sm p-0.5 text-center border-inherit bg-black/5">
+                <div className="font-bold text-[8px] leading-none">إدارة التقويم والامتحانات</div>
+              </div>
+              <div className="font-bold text-[9px] mt-1">اختبار {type}</div>
+            </div>
+            <div className="w-[35%] p-2 flex flex-col justify-between text-[9px] border-r-2 border-inherit">
+              <div className="flex items-center gap-1 border-b border-dotted border-inherit">الاسم: ...........................</div>
+              <div className="flex items-center gap-1 border-b border-dotted border-inherit mt-1">رقم الجلوس: ..................</div>
+              <div className="flex items-center justify-between mt-1">
+                <span>الصف: ............</span>
+                <span>الشعبة: ............</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center border-b-2 pb-4 mb-4 border-inherit">
+             <div className="w-12 h-12 rounded-full bg-slate-100 mb-2 border border-inherit"></div>
+             <div className="h-4 bg-slate-100 rounded w-48 mb-2"></div>
+             <div className="h-3 bg-slate-100 rounded w-32"></div>
+          </div>
+        )}
+
+        {/* Ministerial Sub-bar */}
+        {(templateId === 'ministerial' || templateId === 'ministerial_modern') && (
+           <div className="flex border-2 mb-2 font-serif text-[9px] font-bold border-inherit bg-black/5">
+              <div className="w-6 border-l-2 border-inherit flex items-center justify-center">س</div>
+              <div className="flex-1 p-1 text-center border-l-2 border-inherit">أجب عن جميع الأسئلة</div>
+              <div className="w-6 flex items-center justify-center">د</div>
+           </div>
+        )}
+        
+        {/* Body content placeholders */}
+        <div className="flex-1 mt-2 border-2 border-t-0 border-inherit">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="flex items-stretch border-t-2 border-inherit">
+              <div className="w-6 border-l-2 border-inherit flex items-center justify-center text-[10px] font-bold">{i}</div>
+              <div className="flex-1 p-2 space-y-2">
+                <div className="h-2 bg-slate-100 rounded w-full"></div>
+                <div className="h-2 bg-slate-100 rounded w-3/4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 flex justify-between items-center text-[8px] font-bold opacity-50">
+           <div>تطبيق الرقيم التعليمي</div>
+           <div>الصفحة 1 من 2</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+import { taizAdminData, taizDistricts } from '../data/taizAdminData';
+
 export default function ExamStudio({ onBack }: { onBack: () => void }) {
   const [showWizard, setShowWizard] = useState(true);
   const [wizardStep, setWizardStep] = useState<1 | 2>(1);
   
   const [examData, setExamData] = useState<ExamData>({
-    governorate: 'أمانة العاصمة',
-    directorate: 'السبعين',
+    governorate: 'تعز',
+    directorate: 'التعزية',
+    uzlah: 'الجندية العليا',
     school: 'مدرسة اليرموك النموذجية',
     year: '2026/2027',
     semester: 'الأول',
@@ -170,8 +244,9 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
     model: 'أ',
     template: 'الوزاري اليمني الكلاسيكي',
     themeColor: 'slate',
-    teacherName: 'أ. أحمد محمد',
-    jobTitle: 'معلم أول'
+    teacherName: 'أ.عبدالقوي سيف محمد',
+    jobTitle: 'معلم أول',
+    logoData: ''
   });
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -187,13 +262,35 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
   const [mathEditorQuestionId, setMathEditorQuestionId] = useState<string | null>(null);
   const [mathEditorInitialLatex, setMathEditorInitialLatex] = useState<string>('');
 
+  const [tableConfigOpen, setTableConfigOpen] = useState(false);
+  const [tempTableConfig, setTempTableConfig] = useState({ rows: 3, cols: 2, hasHeader: true });
+  const [zoom, setZoom] = useState(1);
+
   // Auto-fill institutional & teacher data from local storage
   useEffect(() => {
     const savedData = localStorage.getItem('mistar_inst_data');
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        setExamData(prev => ({ ...prev, ...parsed }));
+        let updatedDirectorate = parsed.directorate;
+        let updatedUzlah = parsed.uzlah;
+        
+        if (!taizDistricts.includes(updatedDirectorate)) {
+          updatedDirectorate = 'التعزية';
+        }
+        
+        const validUzlahs = taizAdminData[updatedDirectorate as keyof typeof taizAdminData] || [];
+        if (!validUzlahs.includes(updatedUzlah)) {
+          updatedUzlah = validUzlahs[0] || '';
+        }
+        
+        setExamData(prev => ({ 
+          ...prev, 
+          ...parsed, 
+          governorate: 'تعز',
+          directorate: updatedDirectorate,
+          uzlah: updatedUzlah
+        }));
       } catch (e) {}
     }
   }, []);
@@ -208,16 +305,47 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
     } else {
       // Save data for future
       localStorage.setItem('mistar_inst_data', JSON.stringify({
-        governorate: examData.governorate,
+        governorate: 'تعز',
         directorate: examData.directorate,
+        uzlah: examData.uzlah,
         school: examData.school,
         teacherName: examData.teacherName,
-        jobTitle: examData.jobTitle
+        jobTitle: examData.jobTitle,
+        logoData: examData.logoData
       }));
       setShowWizard(false);
     }
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setExamData(prev => ({ ...prev, logoData: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePrint = () => {
+    // Inject metadata into document for PDF print (works best in Chrome's Save as PDF)
+    const originalTitle = document.title;
+    const docId = `${examData.year.replace('/', '')}${examData.grade.length}`;
+    document.title = `اختبار_${examData.subject}_${examData.grade}_V1.0_ID${docId}`;
+    
+    // Add meta tags temporarily
+    const metaAuthor = document.createElement('meta');
+    metaAuthor.name = 'author';
+    metaAuthor.content = 'محرر الرقيم - م.سهيل الهزبري';
+    document.head.appendChild(metaAuthor);
+    
+    window.print();
+    
+    // Restore
+    document.title = originalTitle;
+    document.head.removeChild(metaAuthor);
+  };
   const handleSave = () => {
     setIsSaving(true);
     // Simulate smart save to local DB
@@ -227,6 +355,12 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
   };
 
   const addQuestion = (type: QuestionType) => {
+    if (type === 'table') {
+      setTableConfigOpen(true);
+      setShowQuestionTypes(false);
+      return;
+    }
+
     const newQ: Question = {
       id: crypto.randomUUID(),
       type,
@@ -316,13 +450,22 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
         
         {!showWizard && (
           <div className="flex items-center gap-2">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1 mx-2">
+              <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-1 hover:bg-white rounded text-slate-600 shadow-sm" title="تكبير">
+                <Plus size={14} />
+              </button>
+              <span className="text-xs font-bold w-10 text-center text-slate-600">{Math.round(zoom * 100)}%</span>
+              <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.5))} className="p-1 hover:bg-white rounded text-slate-600 shadow-sm" title="تصغير">
+                <Minus size={14} />
+              </button>
+            </div>
             <button onClick={generateAlternativeModel} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors">
               <Shuffle size={14} /> إنشاء نموذج {examData.model === 'أ' ? 'ب' : 'أ'}
             </button>
-            <button onClick={() => window.print()} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors border-r border-slate-200 pl-2">
+            <button onClick={handlePrint} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors border-r border-slate-200 pl-2" title="الطباعة المباشرة">
               <Printer size={14} /> طباعة
             </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors">
+            <button onClick={() => { alert('للحفاظ على جودة الرسومات العالية (SVG) ولتضمين بيانات الحقوق، نرجو استخدام خيار الطباعة ثم اختيار "Save as PDF" من المتصفح.'); handlePrint(); }} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 transition-colors" title="حفظ كملف PDF">
               <Download size={14} /> PDF
             </button>
             <button 
@@ -358,7 +501,15 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
             </aside>
 
             {/* Middle: A4 Canvas */}
-            <main className="flex-1 bg-slate-100/50 overflow-y-auto p-4 md:p-8 flex flex-col items-center custom-scrollbar">
+            <main className="flex-1 bg-slate-100/50 overflow-y-auto p-4 md:p-12 flex flex-col items-center custom-scrollbar relative">
+              
+              {/* Workspace Background Grid (Only visible in editor) */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.03] print:hidden" 
+                   style={{ 
+                     backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)',
+                     backgroundSize: '20px 20px' 
+                   }} 
+              />
               
               {/* Grading Engine Warning */}
               <AnimatePresence>
@@ -421,8 +572,21 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                 )}
               </AnimatePresence>
 
+              <div 
+                className="flex flex-col items-center transition-transform duration-200"
+                style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+              >
               {pages.map((page, pageIndex) => (
-                <div key={page.id} className={`w-full max-w-[210mm] bg-white shadow-2xl border-[6px] border-double min-h-[297mm] rounded-sm p-4 md:p-6 relative print:shadow-none print:p-2 print:m-0 mb-8 print:mb-0 break-after-page flex flex-col ${currentTheme.primary}`}>
+                <div 
+                  key={page.id} 
+                  className={`w-[210mm] bg-white shadow-2xl border min-h-[297mm] rounded-sm relative print:shadow-none print:w-[210mm] print:h-[297mm] print:m-0 mb-12 print:mb-0 break-after-page flex flex-col print:overflow-hidden print:box-border ${currentTheme.primary}`}
+                  style={{
+                    paddingTop: '25mm',
+                    paddingBottom: '20mm',
+                    paddingLeft: '15mm',
+                    paddingRight: '15mm'
+                  }}
+                >
                   
                   {pageIndex > 0 && (
                     <div className="absolute -top-12 left-0 right-0 flex justify-between items-center print:hidden">
@@ -439,57 +603,61 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                   {/* Header Engine */}
                   {pageIndex === 0 ? (
                     <>
-                      {examData.template === 'الوزاري اليمني الكلاسيكي' ? (
-                        <div className={`flex justify-between items-stretch border-2 mb-2 font-serif rounded-sm ${examData.themeColor === 'blue' ? 'border-blue-800 text-blue-900' : examData.themeColor === 'rose' ? 'border-rose-900 text-rose-950' : examData.themeColor === 'emerald' ? 'border-emerald-800 text-emerald-950' : 'border-slate-800 text-slate-900'}`}>
-                          {/* Right: Ministry Info */}
-                          <div className="w-[35%] p-2 flex flex-col justify-start leading-snug font-bold text-sm">
-                            <p className="text-[15px] mb-1">الجمهورية اليمنية</p>
-                            <p>وزارة التربية والتعليم والبحث العلمي</p>
-                            <p>مكتب التربية والتعليم ب{examData.governorate}</p>
-                            <p>إدارة التربية والتعليم بمديرية {examData.directorate}</p>
-                            <p className="mt-1">{examData.school}</p>
-                          </div>
+                      {examData.template === 'وزاري يمني كلاسيكي' ? (
+                        <div className={`flex flex-col mb-4 font-serif rounded-sm ${examData.themeColor === 'blue' ? 'text-blue-900 border-blue-800' : examData.themeColor === 'rose' ? 'text-rose-950 border-rose-900' : examData.themeColor === 'emerald' ? 'text-emerald-950 border-emerald-800' : 'text-slate-900 border-slate-800'}`}>
                           
-                          {/* Center: Logo & Title */}
-                          <div className="w-[30%] flex flex-col items-center justify-between p-2">
-                            <div className="flex-1 flex items-center justify-center mb-2">
-                              <img 
-                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Emblem_of_Yemen.svg/200px-Emblem_of_Yemen.svg.png" 
-                                alt="شعار الجمهورية" 
-                                className="h-16 object-contain"
-                                style={{ filter: 'grayscale(100%) contrast(1.2)' }}
-                                crossOrigin="anonymous"
-                              />
+                          {/* Secret Number & Student Info Top Bar */}
+                          <div className={`w-full flex items-center justify-between border-2 border-b-0 rounded-t-sm print:bg-white text-[12px] font-bold ${examData.themeColor === 'blue' ? 'border-blue-800 bg-blue-50/50' : examData.themeColor === 'rose' ? 'border-rose-900 bg-rose-50/50' : examData.themeColor === 'emerald' ? 'border-emerald-800 bg-emerald-50/50' : 'border-slate-800 bg-slate-50/50'}`}>
+                            <div className="w-[120px] p-2 text-center border-l-2 border-inherit whitespace-nowrap">
+                              الرقم السري: ( ............ )
                             </div>
-                            <div className={`w-full border rounded-sm p-1 text-center print:bg-white flex flex-col justify-center ${examData.themeColor === 'blue' ? 'border-blue-800 bg-blue-50' : examData.themeColor === 'rose' ? 'border-rose-900 bg-rose-50' : examData.themeColor === 'emerald' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-800 bg-slate-50'}`}>
-                              <div className="font-bold text-[11px] leading-tight">اختبار {examData.session} للعام الدراسي {examData.year}</div>
-                              <div className="font-bold text-[11px] leading-tight mt-1">مادة {examData.subject} - {examData.grade}</div>
+                            <div className="flex-1 p-2 text-right">
+                              اسم الطالب رباعياً / ..........................................................................................
+                            </div>
+                            <div className="w-[120px] p-2 text-center border-r-2 border-inherit whitespace-nowrap">
+                              رقم الجلوس: ( ............ )
                             </div>
                           </div>
-                          
-                          {/* Left: Student Info */}
-                          <div className="w-[35%] p-2 flex flex-col justify-between leading-snug text-sm">
-                            <div className="flex items-center gap-1">
-                              <span className="font-bold whitespace-nowrap">اسم الطالب:</span> 
-                              <span className={`flex-1 border-b border-dotted ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}></span>
+
+                          {/* Cut Line */}
+                          <div className="flex items-center justify-center overflow-hidden border-x-2 border-inherit text-[9px] opacity-60">
+                             <span className="whitespace-nowrap">قـــص هنـــــــاء - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - قـــص هنـــــــاء</span>
+                          </div>
+
+                          {/* Main Header Box */}
+                          <div className="flex justify-between items-stretch border-2 rounded-b-sm border-inherit overflow-hidden">
+                            
+                            {/* Right: Ministry Info */}
+                            <div className="w-[30%] p-2 flex flex-col justify-start leading-tight font-bold text-[12px] border-l-2 border-inherit">
+                              <p>وزارة التربية والتعليم</p>
+                              <p>مكتب التربية والتعليم بمحافظة/ {examData.governorate}</p>
+                              <p>إدارة التربية والتعليم مديرية/ {examData.directorate}</p>
+                              <p>مدرسة/ {examData.school}</p>
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="font-bold whitespace-nowrap">اسم المدرسة:</span> 
-                              <span className={`flex-1 border-b border-dotted ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}></span>
-                              <span className="font-bold whitespace-nowrap">المنطقة:</span> 
-                              <span className={`w-12 border-b border-dotted ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}></span>
+                            
+                            {/* Center: Logo & Title */}
+                            <div className="w-[40%] flex flex-col items-center justify-between p-2 pt-1 pb-1">
+                              <div className="flex-1 flex items-center justify-center mb-1">
+                                <img 
+                                  src={examData.logoData || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Emblem_of_Yemen.svg/200px-Emblem_of_Yemen.svg.png"} 
+                                  alt="شعار المؤسسة" 
+                                  className="h-16 object-contain"
+                                  style={{ filter: !examData.logoData ? 'grayscale(100%) contrast(1.2)' : 'none' }}
+                                  crossOrigin="anonymous"
+                                />
+                              </div>
+                              <div className="font-bold text-[13px] leading-tight text-center w-full">
+                                اختبار {examData.session} لعام {examData.year}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="font-bold whitespace-nowrap">رقم الجلوس:</span> 
-                              <span className={`flex-1 border-b border-dotted ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}></span>
-                            </div>
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="font-bold whitespace-nowrap">الزمن:</span> 
-                              <span>{examData.time}</span>
-                            </div>
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="font-bold whitespace-nowrap">التاريخ:</span> 
-                              <span className="flex-1 text-center tracking-widest">&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/ 202 م</span>
+                            
+                            {/* Left: Exam Details */}
+                            <div className="w-[30%] p-2 flex flex-col justify-between leading-tight font-bold text-[13px] border-r-2 border-inherit">
+                              <div className="flex gap-1"><span>الصف :</span> <span>{examData.grade}</span></div>
+                              <div className="flex gap-1"><span>المادة :</span> <span>{examData.subject}</span></div>
+                              <div className="flex gap-1"><span>التاريخ :</span> <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+                              <div className="flex gap-1"><span>الزمن :</span> <span>{examData.time}</span></div>
+                              <div className="flex gap-1"><span>النموذج :</span> <span>{examData.model}</span></div>
                             </div>
                           </div>
                         </div>
@@ -497,6 +665,9 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                         <div className={`flex justify-between items-start border-b-2 pb-4 mb-6 font-serif ${examData.themeColor === 'blue' ? 'border-blue-800 text-blue-900' : examData.themeColor === 'rose' ? 'border-rose-900 text-rose-950' : examData.themeColor === 'emerald' ? 'border-emerald-800 text-emerald-950' : 'border-slate-800 text-slate-900'}`}>
                           {/* Modern School Template */}
                           <div className="text-center w-full">
+                              <div className="text-sm opacity-80 mb-1">
+                                تعز - مديرية {examData.directorate} - عزلة {examData.uzlah}
+                              </div>
                               <h1 className="font-bold text-xl mb-1">{examData.school}</h1>
                               <h2 className="text-lg mb-4">اختبار {examData.session} - مادة {examData.subject} - الصف {examData.grade}</h2>
                               <div className="flex justify-center gap-8 text-sm">
@@ -515,7 +686,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                   )}
 
                   {/* Sub-header Bar (Only on first page for ministerial) */}
-                  {pageIndex === 0 && examData.template === 'الوزاري اليمني الكلاسيكي' && (
+                  {pageIndex === 0 && examData.template === 'وزاري يمني كلاسيكي' && (
                     <div className={`flex border-2 mb-4 font-serif text-sm font-bold print:bg-white items-stretch ${examData.themeColor === 'blue' ? 'border-blue-800 text-blue-900 bg-blue-50' : examData.themeColor === 'rose' ? 'border-rose-900 text-rose-950 bg-rose-50' : examData.themeColor === 'emerald' ? 'border-emerald-800 text-emerald-950 bg-emerald-50' : 'border-slate-800 text-slate-900 bg-slate-50'}`}>
                       <div className={`w-8 border-l-2 flex items-center justify-center ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>س</div>
 
@@ -635,17 +806,41 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
 
                         {(q.type === 'table' || q.type === 'comparison' || q.type === 'tajweed') && (
                           <div className={`mt-4 border rounded-sm font-serif ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>
-                            <div className={`flex border-b font-bold print:bg-white text-sm ${examData.themeColor === 'blue' ? 'border-blue-800 bg-blue-50' : examData.themeColor === 'rose' ? 'border-rose-900 bg-rose-50' : examData.themeColor === 'emerald' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-800 bg-slate-50'}`}>
-                              {(q.type === 'comparison') && <div className={`flex-1 p-2 text-center border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>وجه المقارنة</div>}
-                              {(q.type === 'tajweed') && <div className={`flex-1 p-2 text-center border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>الكلمة</div>}
-                              <div className={`flex-1 p-2 text-center border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}><input className="bg-transparent text-center border-none outline-none w-full font-bold" placeholder={q.type === 'tajweed' ? "الحكم التجويدي" : "العنصر الأول"} /></div>
-                              <div className="flex-1 p-2 text-center"><input className="bg-transparent text-center border-none outline-none w-full font-bold" placeholder={q.type === 'tajweed' ? "السبب" : "العنصر الثاني"} /></div>
-                            </div>
-                            {[1,2,3].map((i) => (
-                              <div key={i} className={`flex border-b last:border-0 h-10 ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>
-                                {(q.type === 'comparison' || q.type === 'tajweed') && <div className={`flex-1 p-2 border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}><input className="bg-transparent border-none outline-none w-full h-full text-center text-sm" placeholder="..." /></div>}
-                                <div className={`flex-1 p-2 border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}></div>
-                                <div className="flex-1 p-2"></div>
+                            
+                            {(q.type === 'comparison' || q.type === 'tajweed' || (q.type === 'table' && q.tableConfig?.hasHeader)) && (
+                              <div className={`flex border-b font-bold print:bg-white text-sm ${examData.themeColor === 'blue' ? 'border-blue-800 bg-blue-50' : examData.themeColor === 'rose' ? 'border-rose-900 bg-rose-50' : examData.themeColor === 'emerald' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-800 bg-slate-50'}`}>
+                                {q.type === 'table' ? (
+                                  Array.from({ length: q.tableConfig?.cols || 2 }).map((_, cIndex) => (
+                                    <div key={cIndex} className={`flex-1 p-2 text-center ${cIndex < (q.tableConfig?.cols || 2) - 1 ? 'border-l' : ''} ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>
+                                      <input className="bg-transparent text-center border-none outline-none w-full font-bold" placeholder={`عنوان العمود ${cIndex + 1}`} />
+                                    </div>
+                                  ))
+                                ) : (
+                                  <>
+                                    {(q.type === 'comparison') && <div className={`flex-1 p-2 text-center border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>وجه المقارنة</div>}
+                                    {(q.type === 'tajweed') && <div className={`flex-1 p-2 text-center border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>الكلمة</div>}
+                                    <div className={`flex-1 p-2 text-center border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}><input className="bg-transparent text-center border-none outline-none w-full font-bold" placeholder={q.type === 'tajweed' ? "الحكم التجويدي" : "العنصر الأول"} /></div>
+                                    <div className="flex-1 p-2 text-center"><input className="bg-transparent text-center border-none outline-none w-full font-bold" placeholder={q.type === 'tajweed' ? "السبب" : "العنصر الثاني"} /></div>
+                                  </>
+                                )}
+                              </div>
+                            )}
+
+                            {Array.from({ length: q.type === 'table' ? (q.tableConfig?.rows || 3) : 3 }).map((_, rIndex) => (
+                              <div key={rIndex} className={`flex border-b last:border-0 min-h-10 ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>
+                                {q.type === 'table' ? (
+                                  Array.from({ length: q.tableConfig?.cols || 2 }).map((_, cIndex) => (
+                                    <div key={cIndex} className={`flex-1 p-2 ${cIndex < (q.tableConfig?.cols || 2) - 1 ? 'border-l' : ''} ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}>
+                                      <textarea className="bg-transparent border-none outline-none w-full h-full resize-none text-sm leading-tight text-center overflow-hidden" placeholder="..." rows={1}></textarea>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <>
+                                    {(q.type === 'comparison' || q.type === 'tajweed') && <div className={`flex-1 p-2 border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}><input className="bg-transparent border-none outline-none w-full h-full text-center text-sm" placeholder="..." /></div>}
+                                    <div className={`flex-1 p-2 border-l ${examData.themeColor === 'blue' ? 'border-blue-800' : examData.themeColor === 'rose' ? 'border-rose-900' : examData.themeColor === 'emerald' ? 'border-emerald-800' : 'border-slate-800'}`}></div>
+                                    <div className="flex-1 p-2"></div>
+                                  </>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -684,7 +879,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
 
                         {(q.type === 'circuit' || q.type === 'optics' || q.type === 'mechanics' || q.type === 'graph') && (
                           <div 
-                            className={`mt-4 w-full h-48 border-2 ${q.physicsElements && q.physicsElements.length > 0 ? 'border-solid border-slate-300' : 'border-dashed border-slate-300'} rounded-md flex flex-col items-center justify-center text-slate-400 bg-slate-50 print:border-solid print:border-slate-800 print:bg-white relative overflow-hidden cursor-pointer hover:border-violet-400 hover:shadow-sm transition-all group`}
+                            className={`mt-4 w-full h-48 border-2 ${q.physicsElements && q.physicsElements.length > 0 ? 'border-solid border-slate-300 print:border-none' : 'border-dashed border-slate-300 print:border-solid print:border-slate-800'} rounded-md flex flex-col items-center justify-center text-slate-400 bg-slate-50 print:bg-white relative overflow-hidden cursor-pointer hover:border-violet-400 hover:shadow-sm transition-all group`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setPhysicsEditorQuestionId(q.id);
@@ -708,7 +903,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                                 </div>
                               </>
                             ) : (
-                              <div className="w-full h-full relative" style={{ 
+                              <div className="w-full h-full relative print:!bg-none" style={{ 
                                 backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
                                 backgroundSize: '20px 20px'
                               }}>
@@ -750,7 +945,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
 
                         {q.type === 'math' && (
                           <div 
-                            className={`mt-4 w-full min-h-24 border-2 ${q.latexData ? 'border-transparent' : 'border-dashed border-slate-300'} rounded-md flex flex-col items-center justify-center text-slate-400 bg-slate-50 print:bg-white relative overflow-hidden cursor-pointer hover:border-emerald-400 hover:shadow-sm transition-all group`}
+                            className={`mt-4 w-full min-h-24 border-2 ${q.latexData ? 'border-transparent print:border-none' : 'border-dashed border-slate-300 print:border-solid print:border-slate-800'} rounded-md flex flex-col items-center justify-center text-slate-400 bg-slate-50 print:bg-white relative overflow-hidden cursor-pointer hover:border-emerald-400 hover:shadow-sm transition-all group`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setMathEditorQuestionId(q.id);
@@ -853,28 +1048,45 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
 
                 {/* Paper Footer */}
                 {pageIndex === pages.length - 1 ? (
-                  <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end text-sm font-bold font-serif">
-                    <div className="text-center">
-                      <p>يعتمد ،،، مدير المدرسة</p>
-                      <p className="mt-8">....................................</p>
-                    </div>
-                    <div className="text-center">
-                      <p>{examData.jobTitle} المادة</p>
-                      <p className="mt-4">{examData.teacherName}</p>
+                  <div className="absolute bottom-12 left-12 right-12 flex flex-col justify-end text-sm font-bold font-serif">
+                    <div className="w-full border-b-[3px] border-inherit mb-1"></div>
+                    <div className="w-full border-b border-inherit mb-2"></div>
+                    <div className="flex justify-between items-center text-sm font-bold">
+                      <div className="text-right flex-1 text-slate-800">
+                        انتهت الأسئلة ،، تمنياتي لكم بالتوفيق والنجاح
+                      </div>
+                      <div className="text-left w-32 text-slate-800">
+                        أ/ {examData.teacherName || '................................'}
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className={`absolute bottom-12 left-12 right-12 text-center text-sm font-bold font-serif`}>
-                    <p>يتبع...</p>
+                  <div className="absolute bottom-12 left-12 right-12 flex flex-col justify-end text-sm font-bold font-serif">
+                    <div className="w-full border-b-[3px] border-inherit mb-1"></div>
+                    <div className="w-full border-b border-inherit mb-2"></div>
+                    <div className="flex justify-between items-center text-sm font-bold text-slate-800">
+                      <div className="text-right">
+                        للأسئلة بقية في الورقة التالـيـة &gt;&gt;&gt;
+                      </div>
+                      <div className="text-left">
+                        إقلــــــب الصفحــــــــــــة &gt;&gt;&gt;&gt;&gt;
+                      </div>
+                    </div>
                   </div>
                 )}
                 
                 {/* Page Number */}
-                <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-slate-500 font-bold font-serif print:text-black">
+                <div className="absolute bottom-4 left-0 right-0 text-center text-[10px] text-slate-400 font-bold font-serif print:text-black">
                   الصفحة {pageIndex + 1} من {pages.length}
+                </div>
+
+                {/* Print only watermark - Vertical Right Side */}
+                <div className="absolute top-1/2 -right-[400px] w-[800px] text-[7px] text-slate-300 font-sans whitespace-nowrap -rotate-90 origin-center text-center">
+                  تم التصميم والإنشاء بواسطة استوديو الرقيم التعليمي &copy; {new Date().getFullYear()} || معرف المستند: {examData.year.replace('/','')}{examData.grade.length}
                 </div>
               </div>
             ))}
+            </div>
             </main>
 
             {/* Right Sidebar: Properties */}
@@ -1040,7 +1252,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                {['وزاري', 'حكومي', 'خاص', 'حديث'].map((category) => (
+                {['وزاري', 'حكومي', 'خاص', 'رياضيات', 'فيزياء', 'أساسي', 'حديث', 'طباعة'].map((category) => (
                   <div key={category} className="mb-12 last:mb-0">
                     <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
                       <span className="w-2 h-6 bg-violet-500 rounded-full"></span>
@@ -1059,37 +1271,7 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                           {/* Mini Preview Box */}
                           <div className="aspect-[1/1.2] bg-slate-100 relative p-4 flex flex-col items-center border-b border-slate-200">
                             {/* Abstract paper representation */}
-                            <div className={`w-full h-full bg-white shadow-sm border rounded-sm flex flex-col p-3 ${examData.themeColor === 'blue' ? 'border-blue-200' : 'border-slate-200'}`}>
-                              {/* Header representation based on type */}
-                              {t.type === 'وزاري' && (
-                                <div className="flex justify-between border-b-2 border-slate-800 pb-2 mb-2">
-                                  <div className="w-1/3 space-y-1"><div className="h-1 bg-slate-300 w-full"/><div className="h-1 bg-slate-300 w-4/5"/></div>
-                                  <div className="w-8 h-8 rounded-full border border-slate-800 flex items-center justify-center"><div className="w-4 h-4 bg-slate-300 rounded-full"/></div>
-                                  <div className="w-1/3 space-y-1 flex flex-col items-end"><div className="h-1 bg-slate-300 w-full"/><div className="h-1 bg-slate-300 w-4/5"/></div>
-                                </div>
-                              )}
-                              {t.type === 'حكومي' && (
-                                <div className="flex justify-between pb-2 mb-2">
-                                  <div className="w-8 h-8 rounded-full border border-slate-400 bg-slate-100 flex items-center justify-center shrink-0">ش</div>
-                                  <div className="flex-1 mx-2 flex flex-col items-center justify-center space-y-1"><div className="h-1.5 bg-slate-800 w-1/2"/><div className="h-1 bg-slate-400 w-1/3"/></div>
-                                  <div className="w-8 h-8 rounded-full border border-slate-400 bg-slate-100 flex items-center justify-center shrink-0">ش</div>
-                                </div>
-                              )}
-                              {(t.type === 'خاص' || t.type === 'حديث') && (
-                                <div className="flex gap-2 pb-2 mb-2 border-b border-slate-200">
-                                  <div className="w-10 h-10 rounded-lg bg-violet-100 shrink-0"/>
-                                  <div className="flex-1 space-y-1.5 pt-1"><div className="h-2 bg-slate-800 w-2/3"/><div className="h-1.5 bg-slate-400 w-1/2"/></div>
-                                </div>
-                              )}
-                              
-                              {/* Body representation */}
-                              <div className="flex-1 flex flex-col gap-2 opacity-50">
-                                <div className="flex gap-2"><div className="w-3 h-3 bg-slate-300 rounded-sm"/><div className="h-2 bg-slate-300 w-3/4 mt-0.5"/></div>
-                                <div className="pl-5 space-y-1.5"><div className="h-1.5 bg-slate-200 w-1/2"/><div className="h-1.5 bg-slate-200 w-1/3"/></div>
-                                <div className="flex gap-2 mt-2"><div className="w-3 h-3 bg-slate-300 rounded-sm"/><div className="h-2 bg-slate-300 w-2/3 mt-0.5"/></div>
-                                <div className="pl-5 space-y-1.5"><div className="h-1.5 bg-slate-200 w-full"/><div className="h-1.5 bg-slate-200 w-full"/><div className="h-1.5 bg-slate-200 w-4/5"/></div>
-                              </div>
-                            </div>
+                            <MiniExamPreview type={t.type} templateId={t.id} themeColor={examData.themeColor} logoData={examData.logoData} />
                             
                             {/* Hover Overlay */}
                             <div className="absolute inset-0 bg-violet-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
@@ -1167,31 +1349,51 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                     
                     <div className="grid grid-cols-2 gap-6">
                       <WizardField label="المحافظة">
-                        <select className="wizard-select" value={examData.governorate} onChange={e => setExamData({...examData, governorate: e.target.value})}>
-                          <option value="أمانة العاصمة">أمانة العاصمة</option>
-                          <option value="عدن">عدن</option>
+                        <select className="wizard-select opacity-50 bg-slate-50 cursor-not-allowed" value="تعز" disabled>
                           <option value="تعز">تعز</option>
-                          <option value="حضرموت">حضرموت</option>
                         </select>
                       </WizardField>
                       
                       <WizardField label="المديرية">
-                        <select className="wizard-select" value={examData.directorate} onChange={e => setExamData({...examData, directorate: e.target.value})}>
-                          <option value="السبعين">السبعين</option>
-                          <option value="معين">معين</option>
-                          <option value="الوحدة">الوحدة</option>
-                          <option value="الصافية">الصافية</option>
+                        <select 
+                          className="wizard-select" 
+                          value={examData.directorate} 
+                          onChange={e => {
+                            const newDirectorate = e.target.value;
+                            const newUzlahs = taizAdminData[newDirectorate as keyof typeof taizAdminData] || [];
+                            setExamData({...examData, directorate: newDirectorate, uzlah: newUzlahs[0] || ''});
+                          }}
+                        >
+                          {taizDistricts.map(dist => (
+                            <option key={dist} value={dist}>{dist}</option>
+                          ))}
                         </select>
                       </WizardField>
                     </div>
 
-                    <WizardField label="اسم المدرسة">
-                      <select className="wizard-select" value={examData.school} onChange={e => setExamData({...examData, school: e.target.value})}>
-                        <option value="مدرسة اليرموك النموذجية">مدرسة اليرموك النموذجية</option>
-                        <option value="مدرسة الوحدة">مدرسة الوحدة</option>
-                        <option value="مجمع السعيد التربوي">مجمع السعيد التربوي</option>
-                      </select>
-                    </WizardField>
+                    <div className="grid grid-cols-2 gap-6">
+                      <WizardField label="العزلة">
+                        <select 
+                          className="wizard-select" 
+                          value={examData.uzlah} 
+                          onChange={e => setExamData({...examData, uzlah: e.target.value})}
+                        >
+                          {(taizAdminData[examData.directorate as keyof typeof taizAdminData] || []).map(u => (
+                            <option key={u} value={u}>{u}</option>
+                          ))}
+                        </select>
+                      </WizardField>
+
+                      <WizardField label="اسم المدرسة / المركز الامتحاني">
+                        <input 
+                          type="text" 
+                          className="wizard-select" 
+                          value={examData.school} 
+                          onChange={e => setExamData({...examData, school: e.target.value})}
+                          placeholder="مثال: مدرسة اليرموك النموذجية"
+                        />
+                      </WizardField>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-6">
                       <WizardField label="اسم المعلم">
@@ -1211,6 +1413,23 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
                         </select>
                       </WizardField>
                     </div>
+
+                    <WizardField label="شعار المدرسة / المؤسسة (يظهر في الترويسة)">
+                      <div className="flex items-center gap-4">
+                        <label className="flex-1 cursor-pointer bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 transition-colors">
+                          <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                          <div className="text-sm text-slate-500 flex flex-col items-center">
+                            <ImageIcon size={24} className="mb-2 text-slate-400" />
+                            <span>انقر لرفع الشعار</span>
+                          </div>
+                        </label>
+                        {examData.logoData && (
+                          <div className="w-16 h-16 rounded border border-slate-200 overflow-hidden shrink-0 bg-white">
+                            <img src={examData.logoData} alt="Logo" className="w-full h-full object-contain" />
+                          </div>
+                        )}
+                      </div>
+                    </WizardField>
                   </motion.div>
                 )}
 
@@ -1364,6 +1583,85 @@ export default function ExamStudio({ onBack }: { onBack: () => void }) {
           setMathEditorQuestionId(null);
         }}
       />
+
+      <AnimatePresence>
+        {tableConfigOpen && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6"
+            >
+              <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <Table size={24} className="text-violet-500" />
+                إعدادات الجدول
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">عدد الصفوف</label>
+                  <input 
+                    type="number" 
+                    min="1" max="20"
+                    value={tempTableConfig.rows}
+                    onChange={e => setTempTableConfig({...tempTableConfig, rows: parseInt(e.target.value) || 1})}
+                    className="w-full border border-slate-200 rounded-lg p-2 text-center"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">عدد الأعمدة</label>
+                  <input 
+                    type="number" 
+                    min="1" max="10"
+                    value={tempTableConfig.cols}
+                    onChange={e => setTempTableConfig({...tempTableConfig, cols: parseInt(e.target.value) || 1})}
+                    className="w-full border border-slate-200 rounded-lg p-2 text-center"
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <input 
+                    type="checkbox" 
+                    id="hasHeader"
+                    checked={tempTableConfig.hasHeader}
+                    onChange={e => setTempTableConfig({...tempTableConfig, hasHeader: e.target.checked})}
+                    className="w-4 h-4 text-violet-600 rounded"
+                  />
+                  <label htmlFor="hasHeader" className="text-sm font-bold text-slate-700 select-none">تضمين صف العنوان (رأس الجدول)</label>
+                </div>
+              </div>
+
+              <div className="mt-8 flex gap-3">
+                <button 
+                  onClick={() => {
+                    const newQ: Question = {
+                      id: crypto.randomUUID(),
+                      type: 'table',
+                      text: '',
+                      score: 1,
+                      difficulty: 'متوسط',
+                      objective: 'تذكر',
+                      tableConfig: tempTableConfig
+                    };
+                    setQuestions([...questions, newQ]);
+                    setSelectedQuestionId(newQ.id);
+                    setTableConfigOpen(false);
+                  }}
+                  className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 rounded-lg transition-colors"
+                >
+                  إضافة الجدول
+                </button>
+                <button 
+                  onClick={() => setTableConfigOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{__html: `
         .wizard-select {
