@@ -1,19 +1,29 @@
 import React, { useRef, useState } from 'react';
 import { useEditorStore } from '../store/useEditorStore';
+import { useExamProjectsStore } from '../store/useExamProjectsStore';
 import { 
   PlusCircle, Image as ImageIcon, Table, Calculator, Zap, 
-  Search, Layout, Sliders, Eye, FileDown, X, ArrowRight, Undo2, Redo2, Check
+  Search, Layout, Sliders, Eye, FileDown, X, ArrowRight, Undo2, Redo2, Check, CheckSquare, Grid, FolderOpen, Save, Plus
 } from 'lucide-react';
+import { useOS } from '../../context/OSContext';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { ExamSettingsDialog } from './ExamSettingsDialog';
 import { EditorElement } from '../types';
 
-export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
+interface ExamToolbarProps {
+  onBack?: () => void;
+  onOpenProjectsList?: () => void;
+  onNewProject?: () => void;
+}
+
+export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjectsList, onNewProject }) => {
   const { 
     zoom, setZoom, document, activePageIndex, addQuestion, addElement, updateMetadata,
     history, future, undo, redo, selectElement
   } = useEditorStore();
+
+  const { saveCurrentDocument, exportRaqFile } = useExamProjectsStore();
 
   const [showSettings, setShowSettings] = useState(false);
   const [showQuestionBank, setShowQuestionBank] = useState(false);
@@ -53,6 +63,64 @@ export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
     } catch (e) {
       console.error('PDF Engine error:', e);
     }
+  };
+
+  // Add Automated MCQ Question Helper
+  const handleAddMCQQuestion = () => {
+    const mcqHTML = `
+      <div style="width:100%; border:2px solid #0f172a; border-radius:8px; overflow:hidden; font-family:inherit; direction:rtl; background:#ffffff; text-align:right;">
+        <div style="background:#f8fafc; border-bottom:1.5px solid #0f172a; padding:6px 12px; font-weight:bold; font-size:12px; color:#0f172a; display:flex; justify-content:space-between; align-items:center;">
+          <span>سؤال مؤتمت: اختيار من متعدد (4 خيارات)</span>
+          <span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 8px; border-radius:12px; font-weight:800;">[ درجتان ]</span>
+        </div>
+        <div style="padding:8px 12px; font-weight:bold; font-size:12px; color:#1e293b; border-bottom:1px solid #cbd5e1;">
+          انقر هنا لكتابة نص السؤال المؤتمت...
+        </div>
+        <table style="width:100%; border-collapse:collapse; text-align:center; font-size:11px; font-weight:bold;">
+          <tbody>
+            <tr style="background:#ffffff;">
+              <td style="border-left:1px solid #cbd5e1; padding:6px 4px; width:25%;">
+                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">أ</span>
+                <span>الخيار (أ)</span>
+              </td>
+              <td style="border-left:1px solid #cbd5e1; padding:6px 4px; width:25%;">
+                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">ب</span>
+                <span>الخيار (ب)</span>
+              </td>
+              <td style="border-left:1px solid #cbd5e1; padding:6px 4px; width:25%;">
+                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">ج</span>
+                <span>الخيار (ج)</span>
+              </td>
+              <td style="padding:6px 4px; width:25%;">
+                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">د</span>
+                <span>الخيار (د)</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const newMCQ: EditorElement = {
+      id: crypto.randomUUID(),
+      type: 'text',
+      x: 50,
+      y: 350,
+      width: 694,
+      height: 105,
+      rotation: 0,
+      isLocked: false,
+      isHidden: false,
+      zIndex: 2,
+      content: mcqHTML,
+      fontSize: 14,
+      fontFamily: 'Inter',
+      fontWeight: 'normal',
+      color: '#000000',
+      textAlign: 'right'
+    };
+    
+    addElement(activePageIndex, newMCQ);
   };
 
   // Add Table Helper
@@ -205,15 +273,19 @@ export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
     setShowQuestionBank(false);
   };
 
+  const { launchApplet } = useOS();
+
   // Toolbar elements rendering data
   const TOOLS = [
     { id: 'add_question', label: 'إضافة سؤال', desc: 'إدراج تلقائي مرقم', icon: PlusCircle, color: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100/70 border-emerald-200', action: () => addQuestion(activePageIndex) },
+    { id: 'add_mcq', label: 'سؤال مؤتمت (MCQ)', desc: 'جدول خيارات أ، ب، ج، د', icon: CheckSquare, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100/70 border-indigo-200', action: handleAddMCQQuestion },
+    { id: 'omr_studio', label: 'محرر OMR', desc: 'تحويل لورقة تظليل مؤتمتة', icon: Grid, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100/70 border-purple-200', action: () => launchApplet('bubble_sheets') },
     { id: 'add_image', label: 'إضافة صورة', desc: 'شعار أو رسم توضيحي', icon: ImageIcon, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100/70 border-blue-200', action: triggerImageUpload },
     { id: 'add_table', label: 'إضافة جدول', desc: 'جدول أسئلة متكامل', icon: Table, color: 'text-cyan-600 bg-cyan-50 hover:bg-cyan-100/70 border-cyan-200', action: handleAddTable },
     { id: 'add_math', label: 'معادلة رياضية', desc: 'رموز ومعادلات LaTeX', icon: Calculator, color: 'text-violet-600 bg-violet-50 hover:bg-violet-100/70 border-violet-200', action: handleAddMath },
     { id: 'add_physics', label: 'رسم فيزياء', desc: 'نماذج متجهات ودوائر', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100/70 border-amber-200', action: () => handleAddPhysics(PHYSICS_PRESETS[0].svg) },
     { id: 'bank', label: 'بنك الأسئلة', desc: 'مكتبة يمنية متكاملة', icon: Search, color: 'text-rose-600 bg-rose-50 hover:bg-rose-100/70 border-rose-200', action: () => setShowQuestionBank(true) },
-    { id: 'templates', label: 'القوالب', desc: 'وزاري، مدرسي، مبسط', icon: Layout, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100/70 border-purple-200', action: () => setShowTemplates(true) },
+    { id: 'templates', label: 'القوالب', desc: 'وزاري، أتمتة، ورقة تظليل', icon: Layout, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100/70 border-purple-200', action: () => setShowTemplates(true) },
     { id: 'settings', label: 'بيانات الامتحان', desc: 'تخصيص كامل الترويسة', icon: Sliders, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100/70 border-indigo-200', action: () => setShowSettings(true) },
     { id: 'preview', label: 'المعاينة', desc: 'شاشة طباعة فورية', icon: Eye, color: 'text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-slate-300', action: () => setShowPreview(true) },
     { id: 'pdf', label: 'حفظ PDF', desc: 'تصدير عالي الدقة 300DPI', icon: FileDown, color: 'text-white bg-rose-600 hover:bg-rose-700 border-rose-700 shadow-rose-200 shadow-md', action: handleExportPDF }
@@ -231,26 +303,74 @@ export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
 
       {/* Primary Desktop Top Bar Header */}
       <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm shrink-0 font-sans select-none z-30 relative" dir="rtl">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {onBack && (
             <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-all">
               <ArrowRight size={18} />
             </button>
           )}
+          
+          {onOpenProjectsList && (
+            <button 
+              onClick={onOpenProjectsList}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 text-xs font-black transition-all flex items-center gap-1.5"
+              title="عرض قائمة مشروعات الامتحانات"
+            >
+              <FolderOpen size={15} className="text-indigo-600" />
+              <span>المشروعات</span>
+            </button>
+          )}
+
+          {onNewProject && (
+            <button 
+              onClick={onNewProject}
+              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black transition-all flex items-center gap-1 shadow-sm active:scale-95"
+            >
+              <Plus size={15} />
+              <span>إمتحان جديد</span>
+            </button>
+          )}
+
           <div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+            <h1 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5">
               <span>محرر الرقيم</span>
               <span className="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">ذكي ومحلي</span>
             </h1>
           </div>
           <div className="h-6 w-px bg-slate-200"></div>
-          <span className="text-xs font-black text-slate-400 max-w-[200px] truncate">
+          <span className="text-xs font-black text-slate-400 max-w-[180px] truncate">
             {document.metadata.school} - {document.metadata.subject}
           </span>
         </div>
 
-        {/* Undo/Redo/Zoom shortcuts */}
+        {/* Undo/Redo/Zoom & Save shortcuts */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              saveCurrentDocument(document);
+              exportRaqFile(document.id);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-black transition-all flex items-center gap-1.5"
+            title="تصدير مشروع الامتحان بتنسيق .raq"
+          >
+            <FileDown size={15} className="text-emerald-600" />
+            <span>تصدير (.raq)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              saveCurrentDocument(document);
+              alert('تم حفظ مشروع الامتحان محلياً بنجاح');
+            }}
+            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black transition-all flex items-center gap-1.5"
+            title="حفظ المشروع"
+          >
+            <Save size={15} className="text-indigo-600" />
+            <span>حفظ</span>
+          </button>
+
+          <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
           <button 
             disabled={history.length === 0}
             onClick={undo}
@@ -412,7 +532,7 @@ export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
               </button>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-3 max-h-[65vh] overflow-y-auto custom-scrollbar">
               {/* Template cards */}
               <div 
                 onClick={() => {
@@ -426,10 +546,46 @@ export const ExamToolbar = ({ onBack }: { onBack?: () => void }) => {
                 }`}
               >
                 <div className="text-right">
-                  <div className="text-xs font-black text-slate-800">قالب وزارة التربية والتعليم اليمني</div>
+                  <div className="text-xs font-black text-slate-800">قالب وزارة التربية والتعليم اليمني (التقليدي)</div>
                   <div className="text-[10px] text-slate-400 mt-1 font-semibold">ترويسة ثنائية الحدود، صندوق درجات، قسيمة قص مخصصة</div>
                 </div>
                 {document.metadata.templateType === 'ministerial' && <Check className="text-indigo-600" size={18} />}
+              </div>
+
+              <div 
+                onClick={() => {
+                  updateMetadata({ templateType: 'automated' });
+                  setShowTemplates(false);
+                }}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between hover:shadow-md ${
+                  document.metadata.templateType === 'automated' 
+                    ? 'border-indigo-600 bg-indigo-50/20' 
+                    : 'border-slate-100 hover:border-indigo-200'
+                }`}
+              >
+                <div className="text-right">
+                  <div className="text-xs font-black text-slate-800">قالب امتحانات الأتمتة الوزارية (OMR Questions)</div>
+                  <div className="text-[10px] text-slate-500 mt-1 font-semibold">نموذج أتمتة مع علامات OMR وتعليمات التظليل ورمز النموذج (أ، ب، ج، د)</div>
+                </div>
+                {document.metadata.templateType === 'automated' && <Check className="text-indigo-600" size={18} />}
+              </div>
+
+              <div 
+                onClick={() => {
+                  updateMetadata({ templateType: 'bubblesheet' });
+                  setShowTemplates(false);
+                }}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between hover:shadow-md ${
+                  document.metadata.templateType === 'bubblesheet' 
+                    ? 'border-indigo-600 bg-indigo-50/20' 
+                    : 'border-slate-100 hover:border-indigo-200'
+                }`}
+              >
+                <div className="text-right">
+                  <div className="text-xs font-black text-slate-800">ورقة التظليل والإجابة المؤتمتة (Bubble Sheet)</div>
+                  <div className="text-[10px] text-slate-500 mt-1 font-semibold">ورقة إجابة OMR مخصصة للآلات الضوئية لـ 50 سؤالاً مع رقم الجلوس</div>
+                </div>
+                {document.metadata.templateType === 'bubblesheet' && <Check className="text-indigo-600" size={18} />}
               </div>
 
               <div 

@@ -43,6 +43,7 @@ interface EditorState {
   // History operations
   undo: () => void;
   redo: () => void;
+  setDocument: (doc: DocumentState) => void;
 }
 
 const createInitialPage = (): Page => ({
@@ -82,6 +83,7 @@ const initialMetadata: ExamMetadata = {
   teacherName: savedSettings.teacherName || 'المهندس سهيل الهزبري',
   schoolPrincipal: savedSettings.schoolPrincipal || 'أستاذ علي محمد',
   templateType: 'ministerial',
+  modelCode: 'أ',
   themePreset: 'classic',
   themePrimaryColor: '#000000',
   themeBorderColor: '#000000',
@@ -385,6 +387,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       history: [...state.history, state.document],
       future: newFuture
     };
+  }),
+
+  setDocument: (doc: DocumentState) => set({
+    document: doc,
+    activePageIndex: 0,
+    selectedElementIds: [],
+    history: [],
+    future: []
   }),
 }));
 

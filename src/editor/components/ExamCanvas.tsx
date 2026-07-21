@@ -4,7 +4,7 @@ import { Rnd } from 'react-rnd';
 import { EditorElement } from '../types';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import { MinisterialHeader, MinisterialFooter, PrivateHeader, PrivateFooter } from './templates/MinisterialTemplate';
+import { MinisterialHeader, MinisterialFooter, PrivateHeader, PrivateFooter, AutomatedHeader, AutomatedFooter, BubbleSheetHeader } from './templates/MinisterialTemplate';
 
 const ElementRenderer = ({ element, updateElement, activePageIndex }: { element: EditorElement, updateElement: any, activePageIndex: number }) => {
   const contentEditableRef = useRef<HTMLDivElement>(null);
@@ -114,6 +114,8 @@ export const ExamCanvas = () => {
 
   const isMinisterial = metadata.templateType === 'ministerial';
   const isPrivate = metadata.templateType === 'private';
+  const isAutomated = metadata.templateType === 'automated';
+  const isBubbleSheet = metadata.templateType === 'bubblesheet';
 
   return (
     <div className="w-full min-h-full flex items-center justify-center bg-slate-200/40 p-4 md:p-8 overflow-auto select-none">
@@ -140,6 +142,8 @@ export const ExamCanvas = () => {
         >
           {isMinisterial && activePageIndex === 0 && <MinisterialHeader />}
           {isPrivate && activePageIndex === 0 && <PrivateHeader />}
+          {isAutomated && activePageIndex === 0 && <AutomatedHeader />}
+          {isBubbleSheet && activePageIndex === 0 && <BubbleSheetHeader />}
 
           {/* Render draggable elements on top */}
           <div className="flex-1 relative w-full h-full">
@@ -181,6 +185,7 @@ export const ExamCanvas = () => {
 
           {isMinisterial && activePageIndex === document.pages.length - 1 && <MinisterialFooter />}
           {isPrivate && activePageIndex === document.pages.length - 1 && <PrivateFooter />}
+          {isAutomated && activePageIndex === document.pages.length - 1 && <AutomatedFooter />}
         </div>
       </div>
     </div>

@@ -29,6 +29,20 @@ export default defineConfig(() => {
                   statuses: [0, 200]
                 }
               }
+            },
+            {
+              urlPattern: /^https:\/\/www\.image2url\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'yemeni-logo-cache',
+                expiration: {
+                  maxEntries: 5,
+                  maxAgeSeconds: 60 * 60 * 24 * 365
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
             }
           ]
         },

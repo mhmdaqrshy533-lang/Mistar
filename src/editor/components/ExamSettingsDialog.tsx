@@ -283,6 +283,20 @@ export const ExamSettingsDialog = ({ onClose }: { onClose: () => void }) => {
                 </select>
               </div>
 
+              <div className="space-y-1">
+                <label className="text-xs font-black text-slate-500">رمز نموذج الأتمتة ( Key Version )</label>
+                <select 
+                  value={metadata.modelCode || 'أ'} 
+                  onChange={(e) => handleChange('modelCode', e.target.value as any)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                >
+                  <option value="أ">نموذج أسئلة ( أ )</option>
+                  <option value="ب">نموذج أسئلة ( ب )</option>
+                  <option value="ج">نموذج أسئلة ( ج )</option>
+                  <option value="د">نموذج أسئلة ( د )</option>
+                </select>
+              </div>
+
               <div className="space-y-1 md:col-span-3">
                 <label className="text-xs font-black text-slate-500 font-sans">عنوان الاختبار التفصيلي</label>
                 <input 

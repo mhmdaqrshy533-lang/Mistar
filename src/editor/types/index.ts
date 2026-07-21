@@ -69,7 +69,8 @@ export interface ExamMetadata {
   examType: string;    // نوع الاختبار
   teacherName: string;
   schoolPrincipal?: string; // اسم مدير المدرسة
-  templateType: 'none' | 'ministerial' | 'private';
+  templateType: 'none' | 'ministerial' | 'private' | 'automated' | 'bubblesheet';
+  modelCode?: 'أ' | 'ب' | 'ج' | 'د';
   themePreset?: 'classic' | 'luxury_blue' | 'emerald_green' | 'royal_crimson' | 'imperial_purple' | 'noble_gold';
   themePrimaryColor?: string;
   themeBorderColor?: string;
