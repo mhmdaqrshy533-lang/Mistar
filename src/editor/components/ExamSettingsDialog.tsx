@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useEditorStore } from '../store/useEditorStore';
-import { X, Award, MapPin, BookOpen, Clock } from 'lucide-react';
+import { X, Award, MapPin, BookOpen, Clock, Palette, Check } from 'lucide-react';
 import { ExamMetadata } from '../types';
 
 export const ExamSettingsDialog = ({ onClose }: { onClose: () => void }) => {
@@ -306,6 +306,90 @@ export const ExamSettingsDialog = ({ onClose }: { onClose: () => void }) => {
               </div>
             </div>
           </div>
+
+          {/* Card 4: Template Customization and Design Presets */}
+          {metadata.templateType === 'ministerial' && (
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-5 animate-fadeIn">
+              <div className="flex items-center gap-2 text-indigo-600 font-extrabold text-sm border-b border-slate-100 pb-2 mb-1">
+                <Palette size={18} />
+                <span>لوحة التنسيق الفني وتخصيص الألوان (القالب الوزاري)</span>
+              </div>
+              
+              <div className="space-y-3">
+                <label className="text-xs font-black text-slate-500 block">اختر طابع الألوان والسمة العامة للورقة:</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {Object.entries({
+                    classic: { name: 'الكلاسيكي الكربوني (الأسود الرسمي)', desc: 'أسود كربوني رسمي تقليدي عالي التباين', colors: ['bg-slate-900', 'bg-slate-100', 'bg-rose-600'] },
+                    luxury_blue: { name: 'الكحلي الإمبراطوري الفاخر', desc: 'مزيج الكحلي الفاخر مع تطعيمات ذهبية ملكية', colors: ['bg-blue-900', 'bg-blue-100', 'bg-amber-500'] },
+                    emerald_green: { name: 'الزمردي الجمهوري التعليمي', desc: 'طابع أخضر رسمي مع تدرجات عشبية متوازنة', colors: ['bg-emerald-900', 'bg-emerald-100', 'bg-red-600'] },
+                    royal_crimson: { name: 'العنابي السلطاني المهيب', desc: 'نبرة عنابية مهيبة تعكس الفخامة والأناقة', colors: ['bg-rose-950', 'bg-rose-100', 'bg-rose-600'] },
+                    imperial_purple: { name: 'الأرجواني الأكاديمي الموقر', desc: 'بنفسجي ملكي هادئ يمنح الورقة طابعاً متطوراً', colors: ['bg-violet-950', 'bg-violet-100', 'bg-fuchsia-600'] },
+                    noble_gold: { name: 'الذهبي العسلي البرونزي', desc: 'تدرج ترابي دافئ مريح للعين أثناء الكتابة والحل', colors: ['bg-amber-950', 'bg-amber-100', 'bg-amber-600'] }
+                  }).map(([key, data]) => {
+                    const isSelected = (metadata.themePreset || 'classic') === key;
+                    return (
+                      <div 
+                        key={key}
+                        onClick={() => handleChange('themePreset', key as any)}
+                        className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col gap-2 relative hover:shadow-md ${
+                          isSelected 
+                            ? 'border-indigo-600 bg-indigo-50/25 shadow-sm scale-[1.01]' 
+                            : 'border-slate-100 bg-slate-50/30 hover:border-indigo-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black text-slate-800">{data.name}</span>
+                          <div className="flex gap-1">
+                            {data.colors.map((c, i) => (
+                              <span key={i} className={`w-3.5 h-3.5 rounded-full ${c} border border-white shadow-sm`}></span>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">{data.desc}</p>
+                        {isSelected && (
+                          <div className="absolute left-3 top-3 w-5 h-5 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md">
+                            <Check size={12} className="stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Advanced Border Tweaks */}
+              <div className="border-t border-slate-100 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-500">طريقة رسم خط الإطار والحدود</label>
+                  <select 
+                    value={metadata.themeBorderStyle || 'double'} 
+                    onChange={(e) => handleChange('themeBorderStyle', e.target.value as any)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="double">إطار وزاري مزدوج (Double Line)</option>
+                    <option value="solid">إطار مصمت عريض (Solid Line)</option>
+                    <option value="dashed">إطار منقط متقطع (Dashed Line)</option>
+                    <option value="groove">إطار مجوف ثلاثي الأبعاد (Groove Line)</option>
+                    <option value="ridge">إطار بارز كلاسيكي مضلع (Ridge Line)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-500">سُمْك الحدود والإطار الخارجي</label>
+                  <select 
+                    value={metadata.themeBorderWidth || 'border-[6px]'} 
+                    onChange={(e) => handleChange('themeBorderWidth', e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="border-2">رفيع وأنيق (2 بكسل)</option>
+                    <option value="border-4">رسمي متوازن (4 بكسل)</option>
+                    <option value="border-[6px]">عريض فخم ومميز (6 بكسل)</option>
+                    <option value="border-[8px]">مهيب وسميك جداً (8 بكسل)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
 

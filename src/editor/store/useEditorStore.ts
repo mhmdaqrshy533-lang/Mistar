@@ -81,7 +81,16 @@ const initialMetadata: ExamMetadata = {
   examType: savedSettings.examType || 'شهري',
   teacherName: savedSettings.teacherName || 'المهندس سهيل الهزبري',
   schoolPrincipal: savedSettings.schoolPrincipal || 'أستاذ علي محمد',
-  templateType: 'ministerial'
+  templateType: 'ministerial',
+  themePreset: 'classic',
+  themePrimaryColor: '#000000',
+  themeBorderColor: '#000000',
+  themeBorderStyle: 'double',
+  themeBorderWidth: '4px',
+  themeHeaderBg: '#f8fafc',
+  themeIntroBg: '#000000',
+  themeIntroTextColor: '#ffffff',
+  themeAccentColor: '#e11d48'
 };
 
 const getInitialDocument = (): DocumentState => {

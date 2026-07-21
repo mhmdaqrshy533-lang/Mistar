@@ -70,6 +70,15 @@ export interface ExamMetadata {
   teacherName: string;
   schoolPrincipal?: string; // اسم مدير المدرسة
   templateType: 'none' | 'ministerial' | 'private';
+  themePreset?: 'classic' | 'luxury_blue' | 'emerald_green' | 'royal_crimson' | 'imperial_purple' | 'noble_gold';
+  themePrimaryColor?: string;
+  themeBorderColor?: string;
+  themeBorderStyle?: 'double' | 'solid' | 'dashed' | 'groove' | 'ridge';
+  themeBorderWidth?: string;
+  themeHeaderBg?: string;
+  themeIntroBg?: string;
+  themeIntroTextColor?: string;
+  themeAccentColor?: string;
 }
 
 export interface DocumentState {
