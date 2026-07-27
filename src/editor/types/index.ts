@@ -26,6 +26,8 @@ export interface TextElement extends BaseElement {
   questionType?: 'mcq' | 'tf' | 'essay' | 'matching' | 'fill' | 'reasoning';
   marks?: number;
   options?: string[];
+  optionColumns?: 1 | 2 | 4;
+  numberingFormat?: 'arabic' | 'abjad' | 'hierarchical' | 'roman';
 }
 
 export interface MathElement extends BaseElement {
@@ -82,6 +84,8 @@ export interface ExamMetadata {
   themeIntroBg?: string;
   themeIntroTextColor?: string;
   themeAccentColor?: string;
+  numberingStyle?: 'arabic' | 'abjad' | 'hierarchical' | 'roman';
+  customLogoUrl?: string;
 }
 
 export interface DocumentState {

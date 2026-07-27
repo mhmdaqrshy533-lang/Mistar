@@ -10,15 +10,22 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { ExamSettingsDialog } from './ExamSettingsDialog';
 import { SubjectToolbar } from './SubjectToolbar';
+import { QuickAddQuestionDialog } from './QuickAddQuestionDialog';
 import { EditorElement } from '../types';
 
 interface ExamToolbarProps {
   onBack?: () => void;
   onOpenProjectsList?: () => void;
   onNewProject?: () => void;
+  onOpenPrintCenter?: () => void;
+  onOpenPageManager?: () => void;
+  onOpenAssetBank?: () => void;
 }
 
-export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjectsList, onNewProject }) => {
+export const ExamToolbar: React.FC<ExamToolbarProps> = ({ 
+  onBack, onOpenProjectsList, onNewProject,
+  onOpenPrintCenter, onOpenPageManager, onOpenAssetBank
+}) => {
   const { 
     zoom, setZoom, document, activePageIndex, addQuestion, addElement, updateMetadata,
     history, future, undo, redo, selectElement
@@ -30,12 +37,13 @@ export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjects
   const [showQuestionBank, setShowQuestionBank] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('الكل');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // High-Fidelity PDF Exporting Engine
+  // Mobile-Native Print & High-Fidelity PDF Exporting Engine
   const handleExportPDF = async () => {
     const canvasElement = window.document.getElementById(`exam-canvas-page-${activePageIndex}`);
     if (!canvasElement) return;
@@ -60,9 +68,29 @@ export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjects
       const pdfHeight = 297;
       
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+
+      // Native Mobile Print / Share Flow
+      if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        try {
+          const blob = pdf.output('blob');
+          const file = new File([blob], `${document.metadata.examTitle || 'raq_exam'}.pdf`, { type: 'application/pdf' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: document.metadata.examTitle || 'طباعة نموذج الامتحان',
+              text: 'نموذج امتحان محرر الرقيم الذكي'
+            });
+            return;
+          }
+        } catch (e) {
+          console.warn('Share sheet skipped, falling back to download', e);
+        }
+      }
+
       pdf.save(`${document.metadata.examTitle || 'raq_exam'}.pdf`);
     } catch (e) {
       console.error('PDF Engine error:', e);
+      window.print();
     }
   };
 
@@ -250,18 +278,19 @@ export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjects
 
   // Toolbar elements rendering data
   const TOOLS = [
-    { id: 'add_question', label: 'إضافة سؤال', desc: 'إدراج تلقائي مرقم', icon: PlusCircle, color: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100/70 border-emerald-200', action: () => addQuestion(activePageIndex) },
+    { id: 'add_question', label: 'إضافة سؤال', desc: 'إدراج سريع (< ثوانٍ)', icon: PlusCircle, color: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100/70 border-emerald-200 shadow-sm font-black', action: () => setIsQuickAddOpen(true) },
     { id: 'add_mcq', label: 'سؤال مؤتمت (MCQ)', desc: 'جدول خيارات أ، ب، ج، د', icon: CheckSquare, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100/70 border-indigo-200', action: handleAddMCQQuestion },
     { id: 'omr_studio', label: 'محرر OMR', desc: 'تحويل لورقة تظليل مؤتمتة', icon: Grid, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100/70 border-purple-200', action: () => launchApplet('bubble_sheets') },
+    { id: 'pages_manager', label: 'إدارة الصفحات', desc: 'ترتيب وعرض الصفحات', icon: Layout, color: 'text-sky-600 bg-sky-50 hover:bg-sky-100/70 border-sky-200', action: () => onOpenPageManager && onOpenPageManager() },
     { id: 'add_image', label: 'إضافة صورة', desc: 'شعار أو رسم توضيحي', icon: ImageIcon, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100/70 border-blue-200', action: triggerImageUpload },
     { id: 'add_table', label: 'إضافة جدول', desc: 'جدول أسئلة متكامل', icon: Table, color: 'text-cyan-600 bg-cyan-50 hover:bg-cyan-100/70 border-cyan-200', action: handleAddTable },
     { id: 'add_math', label: 'معادلة رياضية', desc: 'رموز ومعادلات LaTeX', icon: Calculator, color: 'text-violet-600 bg-violet-50 hover:bg-violet-100/70 border-violet-200', action: handleAddMath },
     { id: 'add_physics', label: 'رسم فيزياء', desc: 'نماذج متجهات ودوائر', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100/70 border-amber-200', action: () => handleAddPhysics(PHYSICS_PRESETS[0].svg) },
-    { id: 'bank', label: 'بنك الأسئلة', desc: 'مكتبة يمنية متكاملة', icon: Search, color: 'text-rose-600 bg-rose-50 hover:bg-rose-100/70 border-rose-200', action: () => setShowQuestionBank(true) },
+    { id: 'bank', label: 'بنك الأسئلة', desc: 'مكتبة يمنية متكاملة', icon: Search, color: 'text-rose-600 bg-rose-50 hover:bg-rose-100/70 border-rose-200', action: () => onOpenAssetBank ? onOpenAssetBank() : setShowQuestionBank(true) },
     { id: 'templates', label: 'القوالب', desc: 'وزاري، أتمتة، ورقة تظليل', icon: Layout, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100/70 border-purple-200', action: () => setShowTemplates(true) },
     { id: 'settings', label: 'بيانات الامتحان', desc: 'تخصيص كامل الترويسة', icon: Sliders, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100/70 border-indigo-200', action: () => setShowSettings(true) },
-    { id: 'preview', label: 'المعاينة', desc: 'شاشة طباعة فورية', icon: Eye, color: 'text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-slate-300', action: () => setShowPreview(true) },
-    { id: 'pdf', label: 'حفظ PDF', desc: 'تصدير عالي الدقة 300DPI', icon: FileDown, color: 'text-white bg-rose-600 hover:bg-rose-700 border-rose-700 shadow-rose-200 shadow-md', action: handleExportPDF }
+    { id: 'preview', label: 'مركز الطباعة', desc: 'طباعة فورية / PDF', icon: Eye, color: 'text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-slate-300', action: () => onOpenPrintCenter ? onOpenPrintCenter() : setShowPreview(true) },
+    { id: 'pdf', label: 'حفظ PDF', desc: 'تصدير عالي الدقة 300DPI', icon: FileDown, color: 'text-white bg-rose-600 hover:bg-rose-700 border-rose-700 shadow-rose-200 shadow-md', action: () => onOpenPrintCenter ? onOpenPrintCenter() : handleExportPDF() }
   ];
 
   return (
@@ -641,6 +670,12 @@ export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjects
           </div>
         </div>
       )}
+
+      {/* Quick Add Question Dialog */}
+      <QuickAddQuestionDialog 
+        isOpen={isQuickAddOpen} 
+        onClose={() => setIsQuickAddOpen(false)} 
+      />
     </>
   );
 };

@@ -3,7 +3,7 @@ import { TextElement } from '../types';
 import { useEditorStore } from '../store/useEditorStore';
 import { 
   Trash2, Copy, ArrowUp, ArrowDown, Plus, X, 
-  HelpCircle, CheckSquare, AlignLeft, ToggleLeft, Layers, Edit3
+  Columns, Grid, List, CheckSquare
 } from 'lucide-react';
 
 interface QuestionCardProps {
@@ -11,24 +11,44 @@ interface QuestionCardProps {
   activePageIndex: number;
 }
 
+export const formatQuestionNumber = (num: number, style?: string): string => {
+  if (style === 'abjad') {
+    const abjad = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح', 'ط', 'ي', 'ك', 'ل', 'م', 'ن', 'س', 'ع', 'ف', 'ص', 'ق', 'ر', 'ش', 'ت', 'ث', 'خ', 'ذ', 'ض', 'ظ', 'غ'];
+    return abjad[num - 1] || `${num}`;
+  }
+  if (style === 'hierarchical') {
+    return `1.${num}`;
+  }
+  if (style === 'roman') {
+    const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV'];
+    return roman[num - 1] || `${num}`;
+  }
+  return `${num}`;
+};
+
 export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, activePageIndex }) => {
   const { 
-    updateElement, removeElement, duplicateElement, 
+    document, updateElement, removeElement, duplicateElement, 
     moveQuestionUp, moveQuestionDown, reorderAndRenumberQuestions 
   } = useEditorStore();
 
   const [isFocused, setIsFocused] = useState(false);
 
   // Extract clean text from content if it had prefixes like "س1:"
-  const rawText = element.content.replace(/^س\d+:\s*/, '').replace(/\s*\[\d+\s*درجات\]$/, '');
+  const rawText = element.content.replace(/^س\s*[\d\w\.-]+:\s*/, '').replace(/\s*\[\d+\s*درجات\]$/, '');
 
   const questionType = element.questionType || 'essay';
+  const optionCols = element.optionColumns || 4;
+  const numStyle = element.numberingFormat || document.metadata.numberingStyle || 'arabic';
+
   const options = element.options || [
     'الخيار الأول',
     'الخيار الثاني',
     'الخيار الثالث',
     'الخيار الرابع'
   ];
+
+  const formattedNum = formatQuestionNumber(element.questionNumber || 1, numStyle);
 
   const handleTypeChange = (newType: 'mcq' | 'tf' | 'essay' | 'matching' | 'fill' | 'reasoning') => {
     let defaultOptions = options;
@@ -50,7 +70,7 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
   };
 
   const handleAddOption = () => {
-    const letters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز'];
+    const letters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
     const nextLetter = letters[options.length] || `${options.length + 1}`;
     updateElement(activePageIndex, element.id, { 
       options: [...options, `الخيار (${nextLetter})`] 
@@ -58,14 +78,17 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
   };
 
   const handleRemoveOption = (index: number) => {
-    if (options.length <= 2) return; // Keep at least 2
+    if (options.length <= 2) return;
     const nextOptions = options.filter((_, i) => i !== index);
     updateElement(activePageIndex, element.id, { options: nextOptions });
   };
 
+  const handleOptionColumnsChange = (cols: 1 | 2 | 4) => {
+    updateElement(activePageIndex, element.id, { optionColumns: cols });
+  };
+
   const handleMarksChange = (marks: number) => {
     updateElement(activePageIndex, element.id, { marks });
-    // Sync total marks in exam header
     setTimeout(() => {
       const pageElements = useEditorStore.getState().document.pages[activePageIndex].elements;
       const totalMarks = pageElements
@@ -77,8 +100,7 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
 
   const handleTextBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     const text = e.currentTarget.innerText.trim();
-    const qNum = element.questionNumber || 1;
-    const formattedContent = `س${qNum}: ${text}`;
+    const formattedContent = `س${formattedNum}: ${text}`;
     updateElement(activePageIndex, element.id, { content: formattedContent });
     setIsFocused(false);
     setTimeout(() => {
@@ -86,19 +108,25 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
     }, 100);
   };
 
+  const getGridClass = () => {
+    if (optionCols === 1) return 'grid-cols-1';
+    if (optionCols === 2) return 'grid-cols-2';
+    return 'grid-cols-2 md:grid-cols-4';
+  };
+
   return (
     <div 
       className={`w-full h-full bg-white rounded-xl border-2 transition-all p-3 text-right flex flex-col justify-between font-sans select-none ${
-        isFocused ? 'border-indigo-600 shadow-lg ring-2 ring-indigo-200' : 'border-slate-800 hover:border-slate-900 shadow-sm'
+        isFocused ? 'border-indigo-600 shadow-md ring-2 ring-indigo-200' : 'border-slate-800 hover:border-slate-900 shadow-xs'
       }`}
       dir="rtl"
     >
-      {/* Header Bar */}
+      {/* Question Header Bar */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-2 bg-slate-50/80 -mx-3 -mt-3 p-2.5 rounded-t-lg print:border-slate-400">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Question Number Badge */}
-          <span className="bg-slate-900 text-white font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-sm">
-            س{element.questionNumber || 1}
+          <span className="bg-slate-900 text-white font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-xs">
+            س{formattedNum}
           </span>
 
           {/* Question Type Selector */}
@@ -115,6 +143,34 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
             <option value="reasoning">علل / اذكر السبب</option>
           </select>
 
+          {/* Option Columns Selector for MCQ */}
+          {questionType === 'mcq' && (
+            <div className="flex items-center bg-white border border-slate-300 rounded-lg p-0.5 text-[10px] font-bold text-slate-600 print:hidden">
+              <span className="px-1.5 text-slate-400">الأعمدة:</span>
+              <button 
+                onClick={() => handleOptionColumnsChange(1)}
+                className={`px-1.5 py-0.5 rounded ${optionCols === 1 ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100'}`}
+                title="عمود واحد"
+              >
+                1
+              </button>
+              <button 
+                onClick={() => handleOptionColumnsChange(2)}
+                className={`px-1.5 py-0.5 rounded ${optionCols === 2 ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100'}`}
+                title="عمودان"
+              >
+                2
+              </button>
+              <button 
+                onClick={() => handleOptionColumnsChange(4)}
+                className={`px-1.5 py-0.5 rounded ${optionCols === 4 ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100'}`}
+                title="4 أعمدة"
+              >
+                4
+              </button>
+            </div>
+          )}
+
           {/* Marks Input Badge */}
           <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-900 px-2 py-0.5 rounded-lg text-xs font-bold">
             <input 
@@ -124,7 +180,7 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
               className="w-10 bg-white border border-amber-300 rounded text-center text-xs font-bold text-amber-900 focus:outline-none focus:ring-1 focus:ring-amber-500 print:border-none print:bg-transparent"
               min="1"
             />
-            <span className="text-[11px] text-amber-800 font-bold">درجة</span>
+            <span className="text-[11px] text-amber-800 font-bold">درجات</span>
           </div>
         </div>
 
@@ -175,12 +231,12 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
         </div>
       </div>
 
-      {/* Dynamic Options Area */}
+      {/* Dynamic MCQ Grid Options Area */}
       {questionType === 'mcq' && (
         <div className="mt-2 pt-2 border-t border-slate-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className={`grid ${getGridClass()} gap-2`}>
             {options.map((opt, i) => {
-              const letters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
+              const letters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
               const letter = letters[i] || `${i + 1}`;
               return (
                 <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 print:bg-white print:border-slate-800">
@@ -215,6 +271,7 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
         </div>
       )}
 
+      {/* True/False Options */}
       {questionType === 'tf' && (
         <div className="mt-2 pt-2 border-t border-slate-200 flex items-center gap-6 text-xs font-bold text-slate-800">
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 px-3 py-1 rounded-lg">
@@ -228,6 +285,7 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
         </div>
       )}
 
+      {/* Essay / Short Answer Lines */}
       {questionType === 'essay' && (
         <div className="mt-1 text-xs text-slate-400 font-normal italic border-b border-dashed border-slate-300 pb-2">
           ...................................................................................................................................................
@@ -236,3 +294,4 @@ export const QuestionCardComponent: React.FC<QuestionCardProps> = ({ element, ac
     </div>
   );
 };
+

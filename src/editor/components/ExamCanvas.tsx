@@ -6,6 +6,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { MinisterialHeader, MinisterialFooter, PrivateHeader, PrivateFooter, AutomatedHeader, AutomatedFooter, BubbleSheetHeader } from './templates/MinisterialTemplate';
 import { QuestionCardComponent } from './QuestionCardComponent';
+import { QuestionMicroToolbar } from './QuestionMicroToolbar';
 
 const ElementRenderer = ({ element, updateElement, activePageIndex }: { element: EditorElement, updateElement: any, activePageIndex: number }) => {
   const contentEditableRef = useRef<HTMLDivElement>(null);
@@ -212,10 +213,18 @@ export const ExamCanvas = () => {
                   style={{ zIndex: el.zIndex }}
                   bounds="parent"
                 >
+                  {selectedElementIds.includes(el.id) && isQuestion && (
+                    <QuestionMicroToolbar element={el as TextElement} activePageIndex={activePageIndex} />
+                  )}
                   <ElementRenderer element={el} updateElement={updateElement} activePageIndex={activePageIndex} />
                 </Rnd>
               );
             })}
+          </div>
+
+          {/* Vertical Side Margin Watermark Credit */}
+          <div className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400/80 [writing-mode:vertical-lr] rotate-180 select-none z-10 font-sans tracking-wider pointer-events-none">
+            محرر الرقيم الذكي — برمجة وتصميم المهندس سهيل الهزبري
           </div>
 
           {isMinisterial && activePageIndex === document.pages.length - 1 && <MinisterialFooter />}

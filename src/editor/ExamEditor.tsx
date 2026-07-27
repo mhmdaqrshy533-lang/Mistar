@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { ExamToolbar } from './components/ExamToolbar';
+import { ContextToolbar } from './components/ContextToolbar';
 import { ExamCanvas } from './components/ExamCanvas';
 import { ExamProperties } from './components/ExamProperties';
 import { QuestionOrganizer } from './components/QuestionOrganizer';
 import { EditorStatusBar } from './components/EditorStatusBar';
 import { ExamProjectsDashboard } from './components/ExamProjectsDashboard';
 import { NewExamDialog } from './components/NewExamDialog';
+import { PrintCenterModal } from './components/PrintCenterModal';
+import { PageManagerPanel } from './components/PageManagerPanel';
+import { AssetBankPanel } from './components/AssetBankPanel';
 import { useExamProjectsStore } from './store/useExamProjectsStore';
 import { useEditorStore } from './store/useEditorStore';
 import { ExamMetadata } from './types';
@@ -13,6 +17,9 @@ import { ExamMetadata } from './types';
 export default function ExamEditor({ onBack }: { onBack?: () => void }) {
   const [viewMode, setViewMode] = useState<'projects' | 'editor'>('projects');
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [isPrintCenterOpen, setIsPrintCenterOpen] = useState(false);
+  const [isPageManagerOpen, setIsPageManagerOpen] = useState(false);
+  const [isAssetBankOpen, setIsAssetBankOpen] = useState(false);
 
   const { createProject } = useExamProjectsStore();
   const { setDocument } = useEditorStore();
@@ -38,7 +45,13 @@ export default function ExamEditor({ onBack }: { onBack?: () => void }) {
             onBack={onBack} 
             onOpenProjectsList={() => setViewMode('projects')}
             onNewProject={() => setIsNewDialogOpen(true)}
+            onOpenPrintCenter={() => setIsPrintCenterOpen(true)}
+            onOpenPageManager={() => setIsPageManagerOpen(!isPageManagerOpen)}
+            onOpenAssetBank={() => setIsAssetBankOpen(!isAssetBankOpen)}
           />
+
+          {/* Contextual Smart Toolbar */}
+          <ContextToolbar />
 
           {/* Main Central Layout Workspace Shell */}
           <div className="flex flex-1 overflow-hidden relative">
@@ -52,6 +65,17 @@ export default function ExamEditor({ onBack }: { onBack?: () => void }) {
             
             {/* Properties Sidebar Shell */}
             <ExamProperties />
+
+            {/* Slide-over Panels */}
+            <PageManagerPanel 
+              isOpen={isPageManagerOpen} 
+              onClose={() => setIsPageManagerOpen(false)} 
+            />
+
+            <AssetBankPanel 
+              isOpen={isAssetBankOpen} 
+              onClose={() => setIsAssetBankOpen(false)} 
+            />
           </div>
 
           {/* Status Bar Shell */}
@@ -64,9 +88,15 @@ export default function ExamEditor({ onBack }: { onBack?: () => void }) {
         onClose={() => setIsNewDialogOpen(false)}
         onCreate={handleCreateNew}
       />
+
+      <PrintCenterModal 
+        isOpen={isPrintCenterOpen} 
+        onClose={() => setIsPrintCenterOpen(false)} 
+      />
     </div>
   );
 }
+
 
 
 
