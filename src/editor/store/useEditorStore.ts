@@ -28,6 +28,9 @@ interface EditorState {
   addElement: (pageIndex: number, element: EditorElement) => void;
   updateElement: (pageIndex: number, elementId: string, updates: Partial<EditorElement>) => void;
   removeElement: (pageIndex: number, elementId: string) => void;
+  duplicateElement: (pageIndex: number, elementId: string) => void;
+  moveQuestionUp: (pageIndex: number, elementId: string) => void;
+  moveQuestionDown: (pageIndex: number, elementId: string) => void;
   
   // Custom Question & Layout helper
   addQuestion: (pageIndex: number, text?: string) => void;
@@ -233,6 +236,103 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     return {
       document: { ...state.document, pages: newPages },
       selectedElementIds: [],
+      history: [...state.history, prevDoc],
+      future: []
+    };
+  }),
+
+  duplicateElement: (pageIndex, elementId) => set((state) => {
+    const page = state.document.pages[pageIndex];
+    const target = page.elements.find(e => e.id === elementId);
+    if (!target) return {};
+
+    const prevDoc = JSON.parse(JSON.stringify(state.document));
+    const newId = uuid();
+    const duplicated = {
+      ...JSON.parse(JSON.stringify(target)),
+      id: newId,
+      y: target.y + target.height + 15
+    };
+
+    const newPages = [...state.document.pages];
+    newPages[pageIndex] = {
+      ...page,
+      elements: [...page.elements, duplicated]
+    };
+
+    return {
+      document: { ...state.document, pages: newPages },
+      selectedElementIds: [newId],
+      history: [...state.history, prevDoc],
+      future: []
+    };
+  }),
+
+  moveQuestionUp: (pageIndex, elementId) => set((state) => {
+    const page = state.document.pages[pageIndex];
+    const questions = page.elements
+      .filter(el => el.type === 'text' && (el as any).isQuestion)
+      .sort((a, b) => a.y - b.y);
+
+    const idx = questions.findIndex(q => q.id === elementId);
+    if (idx <= 0) return {};
+
+    const prevDoc = JSON.parse(JSON.stringify(state.document));
+    const current = questions[idx];
+    const prev = questions[idx - 1];
+
+    // Swap Y positions
+    const tempY = current.y;
+    current.y = prev.y;
+    prev.y = tempY;
+
+    const newPages = [...state.document.pages];
+    newPages[pageIndex] = {
+      ...page,
+      elements: page.elements.map(el => {
+        if (el.id === current.id) return { ...el, y: current.y };
+        if (el.id === prev.id) return { ...el, y: prev.y };
+        return el;
+      })
+    };
+
+    return {
+      document: { ...state.document, pages: newPages },
+      history: [...state.history, prevDoc],
+      future: []
+    };
+  }),
+
+  moveQuestionDown: (pageIndex, elementId) => set((state) => {
+    const page = state.document.pages[pageIndex];
+    const questions = page.elements
+      .filter(el => el.type === 'text' && (el as any).isQuestion)
+      .sort((a, b) => a.y - b.y);
+
+    const idx = questions.findIndex(q => q.id === elementId);
+    if (idx < 0 || idx >= questions.length - 1) return {};
+
+    const prevDoc = JSON.parse(JSON.stringify(state.document));
+    const current = questions[idx];
+    const next = questions[idx + 1];
+
+    // Swap Y positions
+    const tempY = current.y;
+    current.y = next.y;
+    next.y = tempY;
+
+    const newPages = [...state.document.pages];
+    newPages[pageIndex] = {
+      ...page,
+      elements: page.elements.map(el => {
+        if (el.id === current.id) return { ...el, y: current.y };
+        if (el.id === next.id) return { ...el, y: next.y };
+        return el;
+      })
+    };
+
+    return {
+      document: { ...state.document, pages: newPages },
       history: [...state.history, prevDoc],
       future: []
     };

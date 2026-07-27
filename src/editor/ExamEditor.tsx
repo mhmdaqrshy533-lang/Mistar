@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ExamToolbar } from './components/ExamToolbar';
 import { ExamCanvas } from './components/ExamCanvas';
 import { ExamProperties } from './components/ExamProperties';
+import { QuestionOrganizer } from './components/QuestionOrganizer';
+import { EditorStatusBar } from './components/EditorStatusBar';
 import { ExamProjectsDashboard } from './components/ExamProjectsDashboard';
 import { NewExamDialog } from './components/NewExamDialog';
 import { useExamProjectsStore } from './store/useExamProjectsStore';
@@ -24,25 +26,37 @@ export default function ExamEditor({ onBack }: { onBack?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-100 overflow-hidden pb-14 lg:pb-0" dir="rtl">
+    <div className="flex flex-col h-full bg-slate-900 overflow-hidden" dir="rtl">
       {viewMode === 'projects' ? (
         <ExamProjectsDashboard 
           onOpenProject={() => setViewMode('editor')} 
         />
       ) : (
-        <>
+        <div className="flex flex-col h-screen overflow-hidden">
+          {/* Top Bar Shell */}
           <ExamToolbar 
             onBack={onBack} 
             onOpenProjectsList={() => setViewMode('projects')}
             onNewProject={() => setIsNewDialogOpen(true)}
           />
-          <div className="flex flex-1 overflow-hidden">
-            <main className="flex-1 relative overflow-auto custom-scrollbar flex justify-center bg-slate-200/50">
+
+          {/* Main Central Layout Workspace Shell */}
+          <div className="flex flex-1 overflow-hidden relative">
+            {/* Question Organizer Layer Panel */}
+            <QuestionOrganizer />
+
+            {/* Central Stable Exam Workspace Canvas */}
+            <main className="flex-1 relative overflow-auto custom-scrollbar bg-slate-800/80">
               <ExamCanvas />
             </main>
+            
+            {/* Properties Sidebar Shell */}
             <ExamProperties />
           </div>
-        </>
+
+          {/* Status Bar Shell */}
+          <EditorStatusBar />
+        </div>
       )}
 
       <NewExamDialog 
@@ -53,5 +67,6 @@ export default function ExamEditor({ onBack }: { onBack?: () => void }) {
     </div>
   );
 }
+
 
 

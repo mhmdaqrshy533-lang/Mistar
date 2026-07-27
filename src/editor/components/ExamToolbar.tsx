@@ -9,6 +9,7 @@ import { useOS } from '../../context/OSContext';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { ExamSettingsDialog } from './ExamSettingsDialog';
+import { SubjectToolbar } from './SubjectToolbar';
 import { EditorElement } from '../types';
 
 interface ExamToolbarProps {
@@ -67,59 +68,31 @@ export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjects
 
   // Add Automated MCQ Question Helper
   const handleAddMCQQuestion = () => {
-    const mcqHTML = `
-      <div style="width:100%; border:2px solid #0f172a; border-radius:8px; overflow:hidden; font-family:inherit; direction:rtl; background:#ffffff; text-align:right;">
-        <div style="background:#f8fafc; border-bottom:1.5px solid #0f172a; padding:6px 12px; font-weight:bold; font-size:12px; color:#0f172a; display:flex; justify-content:space-between; align-items:center;">
-          <span>سؤال مؤتمت: اختيار من متعدد (4 خيارات)</span>
-          <span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 8px; border-radius:12px; font-weight:800;">[ درجتان ]</span>
-        </div>
-        <div style="padding:8px 12px; font-weight:bold; font-size:12px; color:#1e293b; border-bottom:1px solid #cbd5e1;">
-          انقر هنا لكتابة نص السؤال المؤتمت...
-        </div>
-        <table style="width:100%; border-collapse:collapse; text-align:center; font-size:11px; font-weight:bold;">
-          <tbody>
-            <tr style="background:#ffffff;">
-              <td style="border-left:1px solid #cbd5e1; padding:6px 4px; width:25%;">
-                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">أ</span>
-                <span>الخيار (أ)</span>
-              </td>
-              <td style="border-left:1px solid #cbd5e1; padding:6px 4px; width:25%;">
-                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">ب</span>
-                <span>الخيار (ب)</span>
-              </td>
-              <td style="border-left:1px solid #cbd5e1; padding:6px 4px; width:25%;">
-                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">ج</span>
-                <span>الخيار (ج)</span>
-              </td>
-              <td style="padding:6px 4px; width:25%;">
-                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; border:1.5px solid #0f172a; font-size:10px; line-height:16px; margin-left:4px; font-weight:900;">د</span>
-                <span>الخيار (د)</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    `;
-
+    const currentQuestions = document.pages[activePageIndex].elements.filter(el => el.type === 'text' && (el as any).isQuestion);
+    const qNum = currentQuestions.length + 1;
     const newMCQ: EditorElement = {
       id: crypto.randomUUID(),
       type: 'text',
-      x: 50,
+      x: 35,
       y: 350,
-      width: 694,
-      height: 105,
+      width: 724,
+      height: 120,
       rotation: 0,
       isLocked: false,
       isHidden: false,
       zIndex: 2,
-      content: mcqHTML,
+      content: `س${qNum}: اختر الإجابة الصحيحة من بين الخيارات الآتية:`,
       fontSize: 14,
       fontFamily: 'Inter',
-      fontWeight: 'normal',
+      fontWeight: 'bold',
       color: '#000000',
-      textAlign: 'right'
+      textAlign: 'right',
+      isQuestion: true,
+      questionNumber: qNum,
+      questionType: 'mcq',
+      marks: 2,
+      options: ['الخيار (أ)', 'الخيار (ب)', 'الخيار (ج)', 'الخيار (د)']
     };
-    
     addElement(activePageIndex, newMCQ);
   };
 
@@ -395,6 +368,9 @@ export const ExamToolbar: React.FC<ExamToolbarProps> = ({ onBack, onOpenProjects
           <button onClick={() => setZoom(zoom + 10)} className="text-xs font-extrabold text-slate-400 hover:text-slate-800 transition-colors">كبّر</button>
         </div>
       </header>
+
+      {/* Dynamic Subject-Specific Toolbar */}
+      <SubjectToolbar />
 
       {/* Main Large Tools Control Panel - Floating/Bottom Mobile adaptive */}
       <div className="bg-slate-50 border-b border-slate-200 py-3 px-4 z-20 overflow-x-auto shrink-0 select-none shadow-inner" dir="rtl">

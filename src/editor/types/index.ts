@@ -23,7 +23,9 @@ export interface TextElement extends BaseElement {
   textAlign: 'left' | 'center' | 'right' | 'justify';
   isQuestion?: boolean;
   questionNumber?: number;
+  questionType?: 'mcq' | 'tf' | 'essay' | 'matching' | 'fill' | 'reasoning';
   marks?: number;
+  options?: string[];
 }
 
 export interface MathElement extends BaseElement {

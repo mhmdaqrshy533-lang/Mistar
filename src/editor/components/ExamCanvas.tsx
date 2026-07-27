@@ -1,25 +1,27 @@
 import React, { useRef, useEffect } from 'react';
 import { useEditorStore } from '../store/useEditorStore';
 import { Rnd } from 'react-rnd';
-import { EditorElement } from '../types';
+import { EditorElement, TextElement } from '../types';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { MinisterialHeader, MinisterialFooter, PrivateHeader, PrivateFooter, AutomatedHeader, AutomatedFooter, BubbleSheetHeader } from './templates/MinisterialTemplate';
+import { QuestionCardComponent } from './QuestionCardComponent';
 
 const ElementRenderer = ({ element, updateElement, activePageIndex }: { element: EditorElement, updateElement: any, activePageIndex: number }) => {
   const contentEditableRef = useRef<HTMLDivElement>(null);
   const { newlyCreatedElementId, setNewlyCreatedElementId } = useEditorStore();
 
-  useEffect(() => {
-    if (element.type === 'text' && contentEditableRef.current && document.activeElement !== contentEditableRef.current) {
-      contentEditableRef.current.innerText = (element as any).content;
-    }
-  }, [(element as any).content, element.type]);
+  const isHtml = element.type === 'text' && typeof element.content === 'string' && /<[a-z][\s\S]*>/i.test(element.content);
 
   useEffect(() => {
-    if (element.type === 'text' && element.id === newlyCreatedElementId && contentEditableRef.current) {
+    if (element.type === 'text' && !isHtml && !(element as TextElement).isQuestion && contentEditableRef.current && document.activeElement !== contentEditableRef.current) {
+      contentEditableRef.current.innerText = element.content;
+    }
+  }, [element, isHtml]);
+
+  useEffect(() => {
+    if (element.type === 'text' && !isHtml && element.id === newlyCreatedElementId && contentEditableRef.current) {
       contentEditableRef.current.focus();
-      // Position cursor at the end
       try {
         const range = window.document.createRange();
         const sel = window.getSelection();
@@ -32,9 +34,27 @@ const ElementRenderer = ({ element, updateElement, activePageIndex }: { element:
       }
       setNewlyCreatedElementId(null);
     }
-  }, [newlyCreatedElementId, element.id, element.type, setNewlyCreatedElementId]);
+  }, [newlyCreatedElementId, element.id, element.type, isHtml, setNewlyCreatedElementId]);
 
   if (element.type === 'text') {
+    const textEl = element as TextElement;
+
+    // 1. Render Question Card Component
+    if (textEl.isQuestion) {
+      return <QuestionCardComponent element={textEl} activePageIndex={activePageIndex} />;
+    }
+
+    // 2. Render Formatted HTML (Tables, MCQs, or Custom markup) safely
+    if (isHtml) {
+      return (
+        <div 
+          style={{ width: '100%', height: '100%', overflow: 'hidden' }}
+          dangerouslySetInnerHTML={{ __html: textEl.content }}
+        />
+      );
+    }
+
+    // 3. Render Normal Plain Text with Inline Editing
     return (
       <div 
         ref={contentEditableRef}
@@ -46,12 +66,11 @@ const ElementRenderer = ({ element, updateElement, activePageIndex }: { element:
           outline: 'none',
           whiteSpace: 'pre-wrap'
         }}
-        className="cursor-text"
+        className="cursor-text p-1"
         contentEditable
         suppressContentEditableWarning
         onBlur={(e) => {
           updateElement(activePageIndex, element.id, { content: e.currentTarget.innerText });
-          // Renumber on change just in case
           setTimeout(() => {
             useEditorStore.getState().reorderAndRenumberQuestions(activePageIndex);
           }, 100);
@@ -88,23 +107,19 @@ const ElementRenderer = ({ element, updateElement, activePageIndex }: { element:
 };
 
 export const ExamCanvas = () => {
-  const { document, activePageIndex, zoom, setZoom, updateElement, selectElement, selectedElementIds, clearSelection, snapToGrid, reorderAndRenumberQuestions } = useEditorStore();
+  const { document, activePageIndex, zoom, updateElement, selectElement, selectedElementIds, clearSelection, snapToGrid, reorderAndRenumberQuestions } = useEditorStore();
   const page = document.pages[activePageIndex];
   const canvasRef = useRef<HTMLDivElement>(null);
   const metadata = document.metadata;
 
-  // A4 dimensions in px (96 DPI)
+  // A4 dimensions in px (96 DPI standard: 210mm x 297mm)
   const A4_WIDTH = 794;
   const A4_HEIGHT = 1123;
   const GRID_SIZE = 20; 
 
-  // Auto zoom based on platform width
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth < 1024;
-      setZoom(isMobile ? 85 : 100);
-    }
-  }, [setZoom]);
+  const scale = zoom / 100;
+  const scaledWidth = A4_WIDTH * scale;
+  const scaledHeight = A4_HEIGHT * scale;
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === canvasRef.current) {
@@ -118,24 +133,32 @@ export const ExamCanvas = () => {
   const isBubbleSheet = metadata.templateType === 'bubblesheet';
 
   return (
-    <div className="w-full min-h-full flex items-center justify-center bg-slate-200/40 p-4 md:p-8 overflow-auto select-none">
+    <div className="w-full h-full overflow-auto bg-slate-950/40 p-6 md:p-12 flex justify-center items-start custom-scrollbar select-none">
+      {/* Outer Scaled Viewport Container (Controls scrollbars accurately) */}
       <div 
         style={{ 
-          transform: `scale(${zoom / 100})`,
-          transformOrigin: 'center center',
-          transition: 'transform 0.15s ease-out',
-          width: `${A4_WIDTH}px`,
-          height: `${A4_HEIGHT}px`,
+          width: `${scaledWidth}px`,
+          height: `${scaledHeight}px`,
+          position: 'relative',
+          flexShrink: 0,
+          margin: '0 auto',
         }}
-        className="shrink-0 shadow-2xl relative"
+        className="transition-all duration-150 ease-out my-auto shadow-2xl"
       >
-        {/* The Paper */}
+        {/* The Fixed Intrinsic A4 Paper ($794px \times 1123px$) */}
         <div 
           id={`exam-canvas-page-${activePageIndex}`}
           ref={canvasRef}
           onClick={handleCanvasClick}
-          className="bg-white relative flex flex-col h-full w-full"
+          className="bg-white relative flex flex-col shadow-2xl rounded-sm print:shadow-none print:rounded-none"
           style={{
+            width: `${A4_WIDTH}px`,
+            height: `${A4_HEIGHT}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            position: 'absolute',
+            top: 0,
+            left: 0,
             backgroundImage: snapToGrid ? 'linear-gradient(to right, #f8f8f8 1px, transparent 1px), linear-gradient(to bottom, #f8f8f8 1px, transparent 1px)' : 'none',
             backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`
           }}
@@ -147,40 +170,52 @@ export const ExamCanvas = () => {
 
           {/* Render draggable elements on top */}
           <div className="flex-1 relative w-full h-full">
-            {page?.elements.map(el => (
-              <Rnd
-                key={el.id}
-                position={{ x: el.x, y: el.y }}
-                size={{ width: el.width, height: el.height }}
-                onDragStop={(e, d) => {
-                  updateElement(activePageIndex, el.id, { x: d.x, y: d.y });
-                  // Renumber on drop to ensure correct numbering
-                  if (el.type === 'text' && (el as any).isQuestion) {
-                    setTimeout(() => {
-                      reorderAndRenumberQuestions(activePageIndex);
-                    }, 50);
-                  }
-                }}
-                onResizeStop={(e, dir, ref, delta, position) => {
-                  updateElement(activePageIndex, el.id, {
-                    width: parseInt(ref.style.width, 10),
-                    height: parseInt(ref.style.height, 10),
-                    ...position
-                  });
-                }}
-                dragGrid={snapToGrid ? [GRID_SIZE, GRID_SIZE] : [1, 1]}
-                resizeGrid={snapToGrid ? [GRID_SIZE, GRID_SIZE] : [1, 1]}
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  selectElement(el.id, e.shiftKey);
-                }}
-                className={`absolute ${selectedElementIds.includes(el.id) ? 'ring-2 ring-indigo-500 rounded' : 'hover:ring-1 hover:ring-slate-300'}`}
-                style={{ zIndex: el.zIndex }}
-                bounds="parent"
-              >
-                <ElementRenderer element={el} updateElement={updateElement} activePageIndex={activePageIndex} />
-              </Rnd>
-            ))}
+            {page?.elements.map(el => {
+              const isQuestion = el.type === 'text' && (el as TextElement).isQuestion;
+              const isLocked = el.isLocked;
+              const isHidden = el.isHidden;
+
+              return (
+                <Rnd
+                  key={el.id}
+                  id={`question-card-${el.id}`}
+                  position={{ x: el.x, y: el.y }}
+                  size={{ width: el.width, height: el.height }}
+                  scale={scale}
+                  disableDragging={isQuestion || isLocked}
+                  onDragStop={(e, d) => {
+                    updateElement(activePageIndex, el.id, { x: d.x, y: d.y });
+                    if (isQuestion) {
+                      setTimeout(() => {
+                        reorderAndRenumberQuestions(activePageIndex);
+                      }, 50);
+                    }
+                  }}
+                  onResizeStop={(e, dir, ref, delta, position) => {
+                    updateElement(activePageIndex, el.id, {
+                      width: parseInt(ref.style.width, 10),
+                      height: parseInt(ref.style.height, 10),
+                      ...position
+                    });
+                  }}
+                  dragGrid={snapToGrid ? [GRID_SIZE, GRID_SIZE] : [1, 1]}
+                  resizeGrid={snapToGrid ? [GRID_SIZE, GRID_SIZE] : [1, 1]}
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    selectElement(el.id, e.shiftKey);
+                  }}
+                  className={`absolute transition-shadow ${
+                    selectedElementIds.includes(el.id) 
+                      ? 'ring-2 ring-indigo-600 ring-offset-2 ring-offset-white rounded-lg shadow-md' 
+                      : 'hover:ring-1 hover:ring-slate-300'
+                  } ${isHidden ? 'opacity-30 print:hidden' : ''}`}
+                  style={{ zIndex: el.zIndex }}
+                  bounds="parent"
+                >
+                  <ElementRenderer element={el} updateElement={updateElement} activePageIndex={activePageIndex} />
+                </Rnd>
+              );
+            })}
           </div>
 
           {isMinisterial && activePageIndex === document.pages.length - 1 && <MinisterialFooter />}
@@ -191,4 +226,5 @@ export const ExamCanvas = () => {
     </div>
   );
 };
+
 

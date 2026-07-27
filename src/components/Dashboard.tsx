@@ -1,149 +1,383 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileSignature, 
+  QrCode, 
   GraduationCap, 
+  FileSpreadsheet, 
+  BookOpen, 
+  BarChart3, 
   UserCheck, 
-  Archive, 
-  Bell, 
+  FileText, 
+  ClipboardList, 
+  Calendar, 
+  Stamp, 
+  BookMarked, 
+  FlaskConical, 
+  LayoutTemplate, 
+  Database, 
+  Layers, 
+  Sparkles, 
   Settings, 
-  Plus,
-  FileText,
-  Users,
-  Clock,
-  BookOpen,
-  Award,
-  ChevronLeft
+  Search, 
+  Star, 
+  Clock, 
+  Plus, 
+  ExternalLink, 
+  Shield, 
+  Check, 
+  ChevronLeft, 
+  Code,
+  Filter,
+  Trash2,
+  Printer,
+  SlidersHorizontal,
+  FolderOpen
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useRole } from '../context/RoleContext';
 
-export default function Dashboard({ onSelect, onOpenBadges }: { onSelect: (id: string) => void, onOpenBadges: () => void }) {
+// Define the core application portal items
+interface EducationalApp {
+  id: string;
+  title: string;
+  category: 'exams' | 'docs' | 'affairs' | 'plans' | 'resources';
+  categoryLabel: string;
+  icon: any;
+  colorGradient: string;
+  borderColor: string;
+  description: string;
+  tags: string[];
+  actionRoute: string;
+  badge?: string;
+}
+
+const ALL_EDUCATIONAL_APPS: EducationalApp[] = [
+  {
+    id: 'exams_section',
+    title: 'محرر الامتحانات (RDE)',
+    category: 'exams',
+    categoryLabel: 'الامتحانات والأتمتة',
+    icon: FileSignature,
+    colorGradient: 'from-blue-600 to-indigo-700',
+    borderColor: 'hover:border-blue-500',
+    description: 'استوديو متكامل لإنشاء الامتحانات الوزارية والمدرسية مع توزيع الدرجات والنماذج المتعددة (A-B-C-D).',
+    tags: ['امتحانات وزارية', 'نماذج متعددة', 'بنك الأسئلة'],
+    actionRoute: 'exams_section',
+    badge: 'أساسي'
+  },
+  {
+    id: 'bubble_sheets',
+    title: 'نظام الأتمتة (OMR)',
+    category: 'exams',
+    categoryLabel: 'الامتحانات والأتمتة',
+    icon: QrCode,
+    colorGradient: 'from-purple-600 to-violet-800',
+    borderColor: 'hover:border-purple-500',
+    description: 'تصميم وإدارة أوراق إجابة التظليل الآلي المؤتمتة مع أكواد QR والبارکود.',
+    tags: ['أوراق تظليل', 'تصحيح آلي', 'باركود'],
+    actionRoute: 'bubble_sheets',
+  },
+  {
+    id: 'certificates_section',
+    title: 'محرر الشهادات',
+    category: 'docs',
+    categoryLabel: 'الوثائق والشهادات',
+    icon: GraduationCap,
+    colorGradient: 'from-amber-500 to-amber-700',
+    borderColor: 'hover:border-amber-500',
+    description: 'منظومة إصدار شهادات النجاح والتفوق مع الصور الشخصية، والأختام، والتوقيعات الرقمية.',
+    tags: ['نجاح وتفوق', 'صور شخصية', 'أختام رقمية'],
+    actionRoute: 'certificates_section',
+  },
+  {
+    id: 'grades_section',
+    title: 'محرر كشوف الدرجات',
+    category: 'affairs',
+    categoryLabel: 'الشؤون التعليمية والدرجات',
+    icon: BarChart3,
+    colorGradient: 'from-rose-600 to-pink-700',
+    borderColor: 'hover:border-rose-500',
+    description: 'نظام إدارة درجات متقدم لحساب المتوسطات، النسب، واستخراج الإحصائيات والرسوم البيانية.',
+    tags: ['حساب تلقائي', 'إحصائيات', 'رسوم بيانية'],
+    actionRoute: 'grades_section',
+  },
+  {
+    id: 'attendance_section',
+    title: 'محرر الحضور والغياب',
+    category: 'affairs',
+    categoryLabel: 'الشؤون التعليمية والدرجات',
+    icon: UserCheck,
+    colorGradient: 'from-green-600 to-emerald-800',
+    borderColor: 'hover:border-green-500',
+    description: 'سجل إلكتروني دقيق لرصد الحضور، الغياب، التأخير، والأعذار مع تقارير شاملة.',
+    tags: ['رصد يومي', 'أعذار', 'تقارير غياب'],
+    actionRoute: 'attendance_section',
+  },
+  {
+    id: 'plans_section',
+    title: 'محرر التحضير',
+    category: 'plans',
+    categoryLabel: 'التحضير والكتب',
+    icon: BookOpen,
+    colorGradient: 'from-cyan-600 to-blue-700',
+    borderColor: 'hover:border-cyan-500',
+    description: 'إعداد خطط التحضير اليومية والأسبوعية والفصلية مع الأهداف والأنشطة والتقويم.',
+    tags: ['تحضير يومي', 'أهداف', 'وسائل تعليمية'],
+    actionRoute: 'plans_section',
+  },
+  {
+    id: 'letters_section',
+    title: 'محرر الخطابات',
+    category: 'docs',
+    categoryLabel: 'الوثائق والشهادات',
+    icon: FileText,
+    colorGradient: 'from-slate-700 to-slate-900',
+    borderColor: 'hover:border-slate-600',
+    description: 'صياغة الخطابات الرسمية، القرارات، التعاميم، والمذكرات بالهوية المعتمدة.',
+    tags: ['قرارات', 'تعاميم', 'مذكرات'],
+    actionRoute: 'document_editor',
+  },
+  {
+    id: 'meetings_section',
+    title: 'محرر الاجتماعات',
+    category: 'docs',
+    categoryLabel: 'الوثائق والشهادات',
+    icon: ClipboardList,
+    colorGradient: 'from-indigo-600 to-violet-800',
+    borderColor: 'hover:border-indigo-500',
+    description: 'إعداد محاضر الاجتماعات، جداول الأعمال، وتوثيق القرارات والتوقيعات.',
+    tags: ['محاضر', 'جداول أعمال', 'قرارات'],
+    actionRoute: 'reports_section',
+  },
+  {
+    id: 'reports_section',
+    title: 'محرر التقارير',
+    category: 'affairs',
+    categoryLabel: 'الشؤون التعليمية والدرجات',
+    icon: FileSpreadsheet,
+    colorGradient: 'from-teal-600 to-emerald-800',
+    borderColor: 'hover:border-teal-500',
+    description: 'بناء التقارير التحليلية للطلاب والمعلمين والمدرسة مع الرسوم البيانية.',
+    tags: ['أداء الطلاب', 'رسوم بيانية', 'جداول'],
+    actionRoute: 'reports_section',
+  },
+  {
+    id: 'books_section',
+    title: 'محرر الكتب والمناهج',
+    category: 'plans',
+    categoryLabel: 'التحضير والكتب',
+    icon: BookMarked,
+    colorGradient: 'from-violet-700 to-indigo-900',
+    borderColor: 'hover:border-violet-500',
+    description: 'تأليف الملازم والكتب المدرسية مع الفهرسة وإدارة الصفحات ورؤوس وتذييل مخصصة.',
+    tags: ['كتب', 'ملازم', 'فهرسة'],
+    actionRoute: 'books_section',
+  },
+  {
+    id: 'admin_affairs',
+    title: 'الشؤون الإدارية',
+    category: 'affairs',
+    categoryLabel: 'الشؤون التعليمية والدرجات',
+    icon: Stamp,
+    colorGradient: 'from-orange-600 to-amber-700',
+    borderColor: 'hover:border-orange-500',
+    description: 'إدارة النماذج الإدارية، التكليفات، الإخلاء، الإجازات، والنقل.',
+    tags: ['تكليفات', 'إجازات', 'نماذج'],
+    actionRoute: 'forms_section',
+  }
+];
+
+export default function Dashboard({ onSelect, onOpenBadges }: { onSelect: (id: string, action?: 'open' | 'new') => void, onOpenBadges: () => void }) {
+  const { currentRole, headerInfo } = useRole();
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Real project stats loaded from localStorage
+  const [appStats, setAppStats] = useState<Record<string, { count: number, lastModified: string | null }>>({});
+
+  useEffect(() => {
+    // Load actual document stats from local storage (Raqeem Document Engine storage)
+    const loadStats = () => {
+      try {
+        const storedDocs = JSON.parse(localStorage.getItem('raqeem_documents') || '[]');
+        const stats: Record<string, { count: number, lastModified: string | null }> = {};
+        
+        ALL_EDUCATIONAL_APPS.forEach(app => {
+          stats[app.id] = { count: 0, lastModified: null };
+        });
+
+        if (Array.isArray(storedDocs)) {
+          storedDocs.forEach(doc => {
+            if (doc.appId && stats[doc.appId]) {
+              stats[doc.appId].count++;
+              if (!stats[doc.appId].lastModified || new Date(doc.updatedAt) > new Date(stats[doc.appId].lastModified!)) {
+                stats[doc.appId].lastModified = doc.updatedAt;
+              }
+            }
+          });
+        }
+        setAppStats(stats);
+      } catch (e) {
+        console.error('Failed to load document stats', e);
+      }
+    };
+    loadStats();
+    
+    // Listen for storage changes if multiple tabs are open
+    window.addEventListener('storage', loadStats);
+    return () => window.removeEventListener('storage', loadStats);
+  }, []);
+
+  const filteredApps = ALL_EDUCATIONAL_APPS.filter(app => {
+    return searchQuery.trim() === '' || 
+      app.title.includes(searchQuery) || 
+      app.description.includes(searchQuery) ||
+      app.tags.some(t => t.includes(searchQuery));
+  });
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'لا يوجد';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('ar-SA', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    }).format(date);
+  };
+
   return (
-    <div className="p-6 md:p-10 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-4 sm:p-6 md:p-10 space-y-8 font-sans select-none bg-slate-50 min-h-full" dir="rtl">
       
-      {/* Hero Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h2 className="text-4xl font-black text-slate-800 tracking-tight">مرحباً بك، أ. محمد</h2>
-          <p className="text-slate-500 font-medium">إليك نظرة شاملة على نشاطك التعليمي ومستنداتك.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => onSelect('exams_section')}
-            className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-slate-900/10 active:scale-95"
-          >
-            <Plus size={18} /> إنشاء اختبار جديد
-          </button>
-          <button 
-            className="p-3.5 bg-white border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"
-          >
-            <Bell size={20} />
-          </button>
-        </div>
-      </div>
+      {/* Platform Portal Header - Microsoft 365 / Creative Cloud Style */}
+      <div className="bg-slate-900 rounded-3xl p-6 md:p-10 text-white shadow-2xl relative overflow-hidden border border-slate-800">
+        <div className="absolute top-0 right-0 transform translate-x-10 -translate-y-10 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 transform -translate-x-10 translate-y-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: 'الاختبارات المنشأة', value: '42', icon: FileSignature, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'الطلاب النشطون', value: '340', icon: Users, color: 'text-violet-600', bg: 'bg-violet-50' },
-          { label: 'الوثائق الإدارية', value: '12', icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'كشوف الدرجات', value: '18', icon: GraduationCap, color: 'text-rose-600', bg: 'bg-rose-50' },
-        ].map((stat, i) => (
-          <motion.div 
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all group"
-          >
-            <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-              <stat.icon size={24} />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black border border-white/10 text-slate-300">
+              <Shield size={14} className="text-violet-400" />
+              <span>نظام الإنتاج الموحد (Raqeem Document Engine)</span>
             </div>
-            <div className="text-3xl font-black text-slate-800 mb-1">{stat.value}</div>
-            <div className="text-sm font-bold text-slate-400">{stat.label}</div>
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Quick Access */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3">
-              <Clock className="text-slate-400" size={24} />
-              المستندات الأخيرة
-            </h3>
-            <button className="text-sm font-bold text-violet-600 hover:underline">عرض الكل</button>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+              بوابة تطبيقات الرقيم
+            </h1>
+            <p className="text-slate-400 font-bold text-sm max-w-2xl leading-relaxed">
+              مركز أدوات متكامل يتيح لك الوصول إلى محررات متخصصة مبنية على محرك واحد قوي. جميع الأدوات حقيقية، تعمل دون اتصال، وتحفظ أعمالك محلياً بصيغة آمنة.
+            </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { title: 'اختبار الرياضيات - نصف الفصل', type: 'اختبار وزاري', date: 'منذ ساعتين', theme: 'blue' },
-              { title: 'كشف درجات الصف التاسع (أ)', type: 'كشف درجات', date: 'أمس', theme: 'emerald' },
-              { title: 'سجل غياب شهر أكتوبر', type: 'حضور وغياب', date: 'منذ يومين', theme: 'amber' },
-              { title: 'مذكرة استدعاء ولي أمر', type: 'وثيقة رسمية', date: 'منذ 3 أيام', theme: 'rose' },
-            ].map((doc, i) => (
-              <div key={i} className="bg-white border border-slate-200 p-5 rounded-3xl hover:border-violet-400 hover:shadow-lg transition-all cursor-pointer group">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-14 rounded-xl border-2 border-slate-100 flex items-center justify-center bg-slate-50 group-hover:border-violet-100 transition-colors`}>
-                    <FileText size={24} className="text-slate-300 group-hover:text-violet-400 transition-colors" />
-                  </div>
-                  <div className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-lg uppercase tracking-widest">{doc.date}</div>
-                </div>
-                <h4 className="font-black text-slate-800 mb-1 group-hover:text-violet-600 transition-colors">{doc.title}</h4>
-                <p className="text-xs font-bold text-slate-400">{doc.type}</p>
+
+          <div className="flex flex-col gap-3 min-w-[240px]">
+            <div className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 text-white font-black flex items-center justify-center text-xl shadow-md">
+                {headerInfo.authorName ? headerInfo.authorName.charAt(0) : 'R'}
               </div>
-            ))}
+              <div className="text-right">
+                <p className="text-sm font-black text-white">{headerInfo.authorName || 'المستخدم الحالي'}</p>
+                <p className="text-[11px] font-bold text-violet-300 mt-1">{currentRole.title} | {headerInfo.schoolName || 'المنصة الوطنية'}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Categories / Sections */}
-        <div className="space-y-6">
-          <h3 className="text-2xl font-black text-slate-800">الأقسام</h3>
-          <div className="space-y-3">
-            {[
-              { id: 'exams_section', label: 'استوديو الامتحانات', icon: FileSignature, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { id: 'document_editor', label: 'الوثائق والتقارير', icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { id: 'grades_section', label: 'إدارة الدرجات', icon: GraduationCap, color: 'text-rose-600', bg: 'bg-rose-50' },
-              { id: 'attendance_section', label: 'الحضور والغياب', icon: UserCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
-              { id: 'archive_section', label: 'أرشيف المعلم', icon: Archive, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            ].map((section) => (
-              <button 
-                key={section.id}
-                onClick={() => onSelect(section.id)}
-                className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${section.bg} ${section.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <section.icon size={20} />
-                  </div>
-                  <span className="font-bold text-slate-700">{section.label}</span>
-                </div>
-                <ChevronLeft size={16} className="text-slate-300 group-hover:text-slate-600 group-hover:-translate-x-1 transition-all" />
-              </button>
-            ))}
-          </div>
-
-          {/* Banner */}
-          <div className="bg-gradient-to-br from-violet-600 to-indigo-700 p-6 rounded-[2rem] text-white space-y-4 shadow-xl shadow-violet-600/20">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <Award size={20} />
-            </div>
-            <div>
-              <h4 className="font-black text-lg">الرقيم AI بريميوم</h4>
-              <p className="text-violet-100 text-xs font-medium">احصل على تصحيح آلي فائق السرعة وتوليد ذكي للأسئلة.</p>
-            </div>
-            <button className="w-full bg-white text-violet-600 py-3 rounded-xl font-black text-sm hover:bg-violet-50 transition-colors">
-              ترقية الآن
-            </button>
-          </div>
+        {/* Global Hub Search Bar */}
+        <div className="mt-8 relative max-w-3xl">
+          <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="ابحث عن التطبيقات، المحررات، أو الأدوات (مثل: الامتحانات، الدرجات، الشهادات)..."
+            className="w-full pl-4 pr-14 py-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl text-sm font-bold text-white placeholder-slate-400 focus:outline-none focus:bg-white/10 focus:border-violet-500 transition-all shadow-inner"
+          />
         </div>
       </div>
+
+      {/* Educational Apps Grid */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+            <Layers className="text-violet-600" size={24} />
+            <span>التطبيقات الإنتاجية</span>
+          </h2>
+        </div>
+
+        {filteredApps.length === 0 ? (
+          <div className="p-16 text-center bg-white rounded-3xl border border-slate-200 space-y-4 shadow-sm">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+              <Search size={32} />
+            </div>
+            <p className="text-slate-500 font-bold text-lg">لم يتم العثور على أي تطبيق يطابق "{searchQuery}"</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredApps.map((app) => {
+              const Icon = app.icon;
+              const stats = appStats[app.id] || { count: 0, lastModified: null };
+
+              return (
+                <div
+                  key={app.id}
+                  className="bg-white rounded-3xl p-1 border border-slate-200 hover:border-violet-300 shadow-sm hover:shadow-xl transition-all flex flex-col h-[280px] group"
+                >
+                  <div className="p-5 flex-1 flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className={`w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br ${app.colorGradient} text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
+                        <Icon size={28} className="stroke-[2]" />
+                      </div>
+                      <div className="pt-1">
+                        <h3 className="font-black text-slate-900 text-lg leading-tight mb-1 group-hover:text-violet-700 transition-colors">
+                          {app.title}
+                        </h3>
+                        <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg inline-block">
+                          {app.categoryLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-xs font-bold text-slate-600 leading-relaxed mb-4 flex-1">
+                      {app.description}
+                    </p>
+
+                    {/* Real Stats */}
+                    <div className="flex items-center justify-between text-[11px] font-black text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-400">المشاريع</span>
+                        <span className="text-slate-800 text-sm">{stats.count}</span>
+                      </div>
+                      <div className="w-px h-8 bg-slate-200"></div>
+                      <div className="flex flex-col gap-1 text-left">
+                        <span className="text-slate-400">آخر تعديل</span>
+                        <span className="text-slate-700">{formatDate(stats.lastModified)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div className="p-2 border-t border-slate-100 grid grid-cols-2 gap-2 shrink-0">
+                    <button 
+                      onClick={() => onSelect(app.actionRoute, 'open')}
+                      className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl text-xs font-black transition-colors"
+                    >
+                      <FolderOpen size={16} />
+                      <span>فتح مساحة العمل</span>
+                    </button>
+                    <button 
+                      onClick={() => onSelect(app.actionRoute, 'new')}
+                      className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 hover:bg-violet-600 text-white rounded-2xl text-xs font-black transition-colors shadow-sm"
+                    >
+                      <Plus size={16} />
+                      <span>مستند جديد</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

@@ -1,8 +1,4 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
+/** * @license * SPDX-License-Identifier: Apache-2.0 */
 import React from 'react';
 import Dashboard from './components/Dashboard';
 import FinalResults from './pages/FinalResults';
@@ -30,6 +26,7 @@ import ExportCenter from './pages/ExportCenter';
 import Settings from './pages/Settings';
 import BubbleSheets from './pages/BubbleSheets';
 import QuestionBank from './pages/QuestionBank';
+import { TemplateCenter } from './pages/TemplateCenter';
 import { Section } from './types';
 
 export default function App() {
@@ -63,6 +60,8 @@ export default function App() {
         return <Certificates onBack={() => setActivePage('dashboard')} />;
       case 'archive_section':
         return <Archive onBack={() => setActivePage('dashboard')} />;
+      case 'templates_gallery':
+        return <TemplateCenter onBack={() => setActivePage('dashboard')} />;
       case 'library_section':
         return <SmartMemos onBack={() => setActivePage('dashboard')} />;
       case 'teacher_tools':
@@ -73,7 +72,22 @@ export default function App() {
         return <ExportCenter onBack={() => setActivePage('dashboard')} />;
       case 'settings':
         return <Settings onBack={() => setActivePage('dashboard')} />;
-      
+            
+      case 'reports_section':
+        return <AnalyticalDashboard onBack={() => setActivePage('dashboard')} />;
+      case 'timetables_section':
+        return <TimetableScheduler onBack={() => setActivePage('dashboard')} />;
+      case 'worksheets_section':
+        return <OfficialMemos onBack={() => setActivePage('dashboard')} />;
+      case 'forms_section':
+        return <Badges onBack={() => setActivePage('dashboard')} />;
+      case 'books_section':
+        return <SmartMemos onBack={() => setActivePage('dashboard')} />;
+      case 'labs_section':
+        return <SmartMemos onBack={() => setActivePage('dashboard')} />;
+      case 'resources_center':
+        return <Archive onBack={() => setActivePage('dashboard')} />;
+            
       // Kept for direct access or future nested routes
       case 'automation':
       case 'smart_correction':
@@ -122,4 +136,3 @@ export default function App() {
     </MainLayout>
   );
 }
-
