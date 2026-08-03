@@ -163,14 +163,14 @@ const ALL_EDUCATIONAL_APPS: EducationalApp[] = [
   },
   {
     id: 'books_section',
-    title: 'محرر الكتب والمناهج',
+    title: 'استوديو الكتب والملازم (Book Studio)',
     category: 'plans',
     categoryLabel: 'التحضير والكتب',
     icon: BookMarked,
     colorGradient: 'from-violet-700 to-indigo-900',
     borderColor: 'hover:border-violet-500',
-    description: 'تأليف الملازم والكتب المدرسية مع الفهرسة وإدارة الصفحات ورؤوس وتذييل مخصصة.',
-    tags: ['كتب', 'ملازم', 'فهرسة'],
+    description: 'محرك متكامل لتأليف، تنسيق، وإخراج الكتب والملازم المنهجية والحقائب التعليمية وفق أعلى معايير النشر.',
+    tags: ['كتب ورسائل', 'ملازم وزارية', 'أغلفة وفهرسة'],
     actionRoute: 'books_section',
   },
   {

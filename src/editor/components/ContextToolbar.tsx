@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditorStore } from '../store/useEditorStore';
 import { TextElement, MathElement, PhysicsElement, ImageElement } from '../types';
+import { FontPickerModal, TypographyStyle } from '../../components/FontPickerModal';
+import { fontManager } from '../../services/fontManager';
 import { 
   Bold, Italic, AlignRight, AlignCenter, AlignLeft, AlignJustify,
   Type, Palette, Lock, Unlock, Eye, EyeOff, Copy, Trash2, 
   Layers, ArrowUp, ArrowDown, Sparkles, CheckSquare, HelpCircle, 
-  Table, Image as ImageIcon, Calculator, Zap, Grid, BookOpen
+  Table, Image as ImageIcon, Calculator, Zap, Grid, BookOpen, Sliders
 } from 'lucide-react';
 
 export const ContextToolbar: React.FC = () => {
+  const [isFontPickerOpen, setIsFontPickerOpen] = useState(false);
   const { 
     document, activePageIndex, selectedElementIds, 
     updateElement, removeElement, duplicateElement, clearSelection 
@@ -90,6 +93,16 @@ export const ContextToolbar: React.FC = () => {
 
             {/* Typography Controls */}
             <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+              {/* Font Picker Modal Trigger */}
+              <button
+                onClick={() => setIsFontPickerOpen(true)}
+                className="px-2.5 py-1 bg-indigo-950 border border-indigo-700/60 hover:bg-indigo-900 text-indigo-300 rounded font-black text-[11px] flex items-center gap-1 transition-all"
+                title="تخصيص الخط والنمط الاحترافي"
+              >
+                <Type size={13} className="text-amber-400" />
+                <span>الخط والنمط</span>
+              </button>
+
               {/* Font Size */}
               <input 
                 type="number"
@@ -210,6 +223,40 @@ export const ContextToolbar: React.FC = () => {
           إنهاء التحديد
         </button>
       </div>
+
+      {textEl && (
+        <FontPickerModal
+          isOpen={isFontPickerOpen}
+          onClose={() => setIsFontPickerOpen(false)}
+          title="مكتبة الخطوط وتعديل أنماط النص للاختبارات"
+          documentType="exam"
+          currentStyle={{
+            fontFamily: textEl.fontFamily,
+            fontSize: textEl.fontSize,
+            fontWeight: textEl.fontWeight,
+            color: textEl.color,
+            textAlign: textEl.textAlign as any,
+            lineHeight: textEl.lineHeight,
+            letterSpacing: textEl.letterSpacing,
+            wordSpacing: textEl.wordSpacing,
+            opacity: textEl.opacity
+          }}
+          onApplyStyle={(style) => {
+            if (!textEl) return;
+            updateElement(activePageIndex, element.id, {
+              fontFamily: style.fontFamily,
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight as any,
+              color: style.color,
+              textAlign: style.textAlign,
+              lineHeight: style.lineHeight,
+              letterSpacing: style.letterSpacing,
+              wordSpacing: style.wordSpacing,
+              opacity: style.opacity
+            });
+          }}
+        />
+      )}
     </div>
   );
 };

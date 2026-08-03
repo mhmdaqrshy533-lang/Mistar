@@ -21,6 +21,10 @@ export interface TextElement extends BaseElement {
   fontWeight: string;
   color: string;
   textAlign: 'left' | 'center' | 'right' | 'justify';
+  lineHeight?: number;
+  letterSpacing?: number;
+  wordSpacing?: number;
+  opacity?: number;
   isQuestion?: boolean;
   questionNumber?: number;
   questionType?: 'mcq' | 'tf' | 'essay' | 'matching' | 'fill' | 'reasoning';
@@ -73,7 +77,7 @@ export interface ExamMetadata {
   examType: string;    // نوع الاختبار
   teacherName: string;
   schoolPrincipal?: string; // اسم مدير المدرسة
-  templateType: 'none' | 'ministerial' | 'private' | 'automated' | 'bubblesheet';
+  templateType: 'none' | 'ministerial' | 'private' | 'automated' | 'bubblesheet' | 'book_studio';
   modelCode?: 'أ' | 'ب' | 'ج' | 'د';
   themePreset?: 'classic' | 'luxury_blue' | 'emerald_green' | 'royal_crimson' | 'imperial_purple' | 'noble_gold';
   themePrimaryColor?: string;
@@ -92,7 +96,7 @@ export interface DocumentState {
   id: string;
   title: string;
   pages: Page[];
-  paperSize: 'A4' | 'A3' | 'Letter' | 'Legal';
+  paperSize: 'A4' | 'A3' | 'Letter' | 'Legal' | 'A5' | 'B5';
   orientation: 'portrait' | 'landscape';
   margins: { top: number; right: number; bottom: number; left: number };
   metadata: ExamMetadata;

@@ -19,6 +19,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import SmartGrading from './pages/SmartGrading';
 import GradeRecords from './pages/GradeRecords';
 import SmartMemos from './pages/SmartMemos';
+import BookStudio from './pages/BookStudio';
 import OfficialMemos from './pages/OfficialMemos';
 import TermPlan from './pages/TermPlan';
 import Archive from './pages/Archive';
@@ -82,7 +83,7 @@ export default function App() {
       case 'forms_section':
         return <Badges onBack={() => setActivePage('dashboard')} />;
       case 'books_section':
-        return <SmartMemos onBack={() => setActivePage('dashboard')} />;
+        return <BookStudio onBack={() => setActivePage('dashboard')} />;
       case 'labs_section':
         return <SmartMemos onBack={() => setActivePage('dashboard')} />;
       case 'resources_center':

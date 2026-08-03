@@ -14,7 +14,7 @@ interface PrintCenterModalProps {
 export const PrintCenterModal: React.FC<PrintCenterModalProps> = ({ isOpen, onClose }) => {
   const { document, activePageIndex, setActivePage } = useEditorStore();
 
-  const [paperSize, setPaperSize] = useState<'A4' | 'A3' | 'Letter' | 'Legal'>(document.paperSize || 'A4');
+  const [paperSize, setPaperSize] = useState<'A4' | 'A3' | 'Letter' | 'Legal' | 'A5' | 'B5'>(document.paperSize || 'A4');
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>(document.orientation || 'portrait');
   const [includeWatermark, setIncludeWatermark] = useState<boolean>(true);
   const [pageRange, setPageRange] = useState<'all' | 'current'>('all');

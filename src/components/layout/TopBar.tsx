@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Search, Bell, Settings, User, HelpCircle, Download, CloudOff, Wifi, Smartphone, Shield, Layers } from 'lucide-react';
+import { Search, Bell, Settings, User, HelpCircle, Download, CloudOff, Wifi, Smartphone, Shield, Layers, Type } from 'lucide-react';
 import { motion } from 'motion/react';
 import { usePWA } from '../../hooks/usePWA';
 import { PWAInstallModal } from '../PWAInstallModal';
 import { RoleSelectorModal } from '../RoleSelectorModal';
 import { ResourceCenterModal } from '../ResourceCenterModal';
+import { FontPickerModal } from '../FontPickerModal';
 import { useRole } from '../../context/RoleContext';
 
 export const TopBar = () => {
@@ -13,6 +14,7 @@ export const TopBar = () => {
   const [isPWAModalOpen, setIsPWAModalOpen] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+  const [isFontPickerOpen, setIsFontPickerOpen] = useState(false);
 
   return (
     <>
@@ -53,6 +55,16 @@ export const TopBar = () => {
           >
             <Layers size={14} className="text-amber-600" />
             <span>الموارد الوطنية</span>
+          </button>
+
+          {/* Font Library Manager Button */}
+          <button
+            onClick={() => setIsFontPickerOpen(true)}
+            className="hidden md:flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-sm active:scale-95"
+            title="مكتبة الـ 60 خطاً رسمياً وتعليمياً"
+          >
+            <Type size={14} className="text-indigo-600" />
+            <span>مكتبة الخطوط</span>
           </button>
 
           {/* Offline / Online Status Badge */}
@@ -126,6 +138,12 @@ export const TopBar = () => {
       <ResourceCenterModal
         isOpen={isResourceModalOpen}
         onClose={() => setIsResourceModalOpen(false)}
+      />
+
+      <FontPickerModal
+        isOpen={isFontPickerOpen}
+        onClose={() => setIsFontPickerOpen(false)}
+        title="مكتبة ومدير الخطوط المنظومية والتعليمية"
       />
     </>
   );
